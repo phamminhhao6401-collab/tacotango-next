@@ -1,8 +1,27 @@
-export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-900 text-white">
-      <h1 className="text-4xl font-bold mb-4">Taco Tango</h1>
-      <p className="text-xl">Website đang được nâng cấp bởi Minh Hào - Wassup Nigga.</p>
-    </main>
-  );
+import { CartProvider } from '@/components/cart-context'
+import { SiteHeader } from '@/components/site-header'
+import { HeroSection } from '@/components/hero-section'
+import { StorySection } from '@/components/story-section'
+import { MenuSection } from '@/components/menu-section'
+import { FaqSection } from '@/components/faq-section'
+import { SiteFooter } from '@/components/site-footer'
+import { CartDrawer } from '@/components/cart-drawer'
+
+
+export default function Page() {
+ return (
+   <CartProvider>
+     <div className="film-grain min-h-screen bg-blue">
+       <SiteHeader />
+       <main>
+         <HeroSection />
+         <StorySection />
+         <MenuSection />
+         <FaqSection />
+       </main>
+       <SiteFooter />
+       <CartDrawer />
+     </div>
+   </CartProvider>
+ )
 }
