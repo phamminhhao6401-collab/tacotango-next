@@ -10,7 +10,7 @@ import { SiteFooter } from "@/components/site-footer";
 
 type FormState = {
   name: string;
-  email: string; // Đã thêm email
+  email: string;
   phone: string;
   address: string;
 };
@@ -28,7 +28,6 @@ export default function CheckoutPage() {
     const nextErrors: Partial<FormState> = {};
     if (!form.name.trim()) nextErrors.name = "Vui lòng nhập tên người nhận.";
     
-    // Bổ sung validate cho Email
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       nextErrors.email = "Email không hợp lệ.";
     }
@@ -41,37 +40,34 @@ export default function CheckoutPage() {
     return Object.keys(nextErrors).length === 0;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (items.length === 0) return;
-    if (!validate()) return;
-
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (items.length === 0) return;
     if (!validate()) return;
 
     try {
-      // Bắn dữ liệu về API để gửi email
-      await fetch('/api/send-email', {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name,
           email: form.email,
+          phone: form.phone,
+          address: form.address,
           items: items,
           subtotal: subtotal
         }),
       });
 
-      // Sau khi gọi API xong thì tiến hành clear giỏ hàng
+      if (!response.ok) throw new Error("Gửi email thất bại");
+
       clearCart();
       setOrderPlaced(true);
       setForm(INITIAL_FORM);
     } catch (error) {
+      console.error(error);
       alert("Có lỗi xảy ra khi đặt hàng, vui lòng thử lại!");
     }
-  }
   }
 
   if (!isMounted) {
@@ -225,7 +221,6 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                {/* Bổ sung trường Email */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="email" className="font-saigon2 text-xs font-bold uppercase tracking-wide text-blue">
                     Địa chỉ Email
