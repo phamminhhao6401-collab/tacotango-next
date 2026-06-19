@@ -1,50 +1,62 @@
-import { Analytics } from '@vercel/analytics/next'
-import type { Metadata, Viewport } from 'next'
-import { Oswald, JetBrains_Mono } from 'next/font/google'
-import './globals.css'
+import type { Metadata } from "next";
+import { JetBrains_Mono, Archivo_Black } from "next/font/google";
+import localFont from "next/font/local";
+import { CartProvider } from "@/components/cart-provider";
+import "./globals.css";
 
+// Font nền cho toàn site: mono cho phần thân, heading đậm cho các tiêu đề mặc định
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
 
-const oswald = Oswald({
- variable: '--font-heading',
- subsets: ['latin', 'latin-ext', 'vietnamese'],
- weight: ['400', '500', '600', '700'],
-})
+const heading = Archivo_Black({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  weight: "400",
+  display: "swap",
+});
 
-
-const jetbrainsMono = JetBrains_Mono({
- variable: '--font-mono',
- subsets: ['latin', 'latin-ext', 'vietnamese'],
- weight: ['400', '500', '700'],
-})
-
+// 3 font local riêng biệt dùng cho các điểm nhấn đặc trưng (Hero, tên món...)
+// Lưu ý: đặt file .ttf của bạn trong app/fonts/1.ttf, 2.ttf, 3.ttf
+const saigon1 = localFont({
+  src: "./fonts/1.ttf",
+  variable: "--font-saigon1",
+  display: "swap",
+});
+const saigon2 = localFont({
+  src: "./fonts/2.ttf",
+  variable: "--font-saigon2",
+  display: "swap",
+});
+const saigon3 = localFont({
+  src: "./fonts/3.ttf",
+  variable: "--font-saigon3",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
- title: 'TACO TANGO — Walking Tacos',
- description:
-   'Taco Tango: Walking tacos cho tâm trạng của bạn. Đang quạu thì ăn kiểu quạu, đang vui thì quẩy kiểu vui!',
- generator: 'v0.app',
-}
-
-
-export const viewport: Viewport = {
- themeColor: '#0F2557',
-}
-
+  title: "Taco Tango — Bụi bặm, cay nồng, rực rỡ",
+  description:
+    "Taco Tango: quầy taco đường phố phong cách retro Mexico, nơi mỗi cuộn bánh là một điệu tango vị giác.",
+};
 
 export default function RootLayout({
- children,
-}: Readonly<{
- children: React.ReactNode
-}>) {
- return (
-   <html
-     lang="vi"
-     className={`${oswald.variable} ${jetbrainsMono.variable}`}
-   >
-     <body className="bg-background font-mono antialiased">
-       {children}
-       {process.env.NODE_ENV === 'production' && <Analytics />}
-     </body>
-   </html>
- )
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    // Chỉ nên có DUY NHẤT một thẻ <html> trong toàn bộ app
+    <html lang="vi" suppressHydrationWarning>
+      {/* Chỉ nên có DUY NHẤT một thẻ <body> trong toàn bộ app */}
+      <body
+        className={`${mono.variable} ${heading.variable} ${saigon1.variable} ${saigon2.variable} ${saigon3.variable} bg-mustard text-blue font-mono antialiased`}
+      >
+        <CartProvider>{children}</CartProvider>
+      </body>
+    </html>
+  );
 }

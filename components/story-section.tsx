@@ -1,88 +1,65 @@
-'use client'
-
-
-import Image from 'next/image'
-
-
-function Polaroid({
- src,
- alt,
- caption,
- rotate,
-}: {
- src: string
- alt: string
- caption: string
- rotate: string
-}) {
- return (
-   <div className={`mx-auto w-full max-w-sm ${rotate}`}>
-     <div className="bg-cream p-3 shadow-[8px_8px_0_#0F2557]">
-       <div className="film-frame">
-         <div className="relative aspect-square w-full overflow-hidden">
-           <Image src={src} alt={alt} fill className="object-cover" />
-         </div>
-       </div>
-       <p className="pt-3 text-center font-mono text-sm font-500 text-blue">
-         {caption}
-       </p>
-     </div>
-   </div>
- )
-}
-
+import Image from "next/image";
 
 export function StorySection() {
- return (
-   <section id="story" className="bg-blue py-20">
-     <div className="mx-auto max-w-6xl px-4">
-       <div className="mb-14 text-center">
-         <h2 className="skew-retro inline-block font-heading text-5xl font-700 uppercase text-mustard drop-shadow-[4px_4px_0_#E03C31] sm:text-6xl">
-           Chuyện của tụi mình
-         </h2>
-       </div>
+  return (
+    <section
+      id="story"
+      className="border-b-4 border-blue bg-cream px-4 py-20 sm:px-6"
+    >
+      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        {/* === KHU VỰC HÌNH ẢNH === */}
+        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6">
+            <div className="relative aspect-[4/5] w-full rotate-[-4deg] overflow-hidden rounded-2xl border-3 border-blue shadow-retro transition-transform hover:rotate-0">
+              <Image
+                src="/images/tango.jpg"
+                alt="Taco Tango"
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover"
+              />
+            </div>
 
+            <div className="relative mt-8 aspect-[4/5] w-full rotate-[3deg] overflow-hidden rounded-2xl border-3 border-blue shadow-retro transition-transform hover:rotate-0">
+              <Image
+                src="/images/emotions.png"
+                alt="Taco Tango"
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
 
-       {/* Part 1: text left, image right */}
-       <div className="grid items-center gap-10 md:grid-cols-2">
-         <div className="border-l-4 border-tomato pl-6">
-           <span className="font-heading text-7xl font-700 text-tomato/40">
-             01
-           </span>
-           <p className="text-pretty font-mono text-lg leading-relaxed text-cream">
-             {'Chỉ cần nghe đến từ "Tango", tâm trí bạn sẽ lập tức hòa vào những nhịp điệu cuốn hút, sự chuyển động mượt mà và những biến tấu không ngừng.'}
-           </p>
-         </div>
-         <Polaroid
-           src="/images/tango.jpg"
-           alt="Cặp đôi nhảy tango phong cách retro"
-           caption="// vũ điệu Tango bất tận"
-           rotate="rotate-2"
-         />
-       </div>
+          <span className="absolute -bottom-2 -right-2 z-10 rotate-6 rounded-full border-3 border-blue bg-mustard px-4 py-2 font-saigon3 text-xs font-bold uppercase tracking-wide text-blue shadow-retro-sm sm:-bottom-4 sm:-right-4">
+            est. ueh-isb, 2026
+          </span>
+        </div>
 
+        {/* === KHU VỰC VĂN BẢN === */}
+        <div className="flex flex-col gap-5">
+          <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">
+            Câu chuyện
+          </span>
+          <h2 className="font-saigon2 text-3xl leading-tight text-blue sm:text-4xl">
+            Điệu nhảy và cảm xúc
+          </h2>
+          <p className="font-mono text-base leading-relaxed text-blue">
+            Chỉ cần nghe đến từ &quot;Tango&quot;, tâm trí bạn sẽ lập tức hòa vào
+            những nhịp điệu cuốn hút, sự chuyển động mượt mà và những biến tấu
+            không ngừng.
+          </p>
 
-       {/* Part 2: image left, text right */}
-       <div className="mt-20 grid items-center gap-10 md:grid-cols-2">
-         <Polaroid
-           src="/images/emotions.png"
-           alt="Ảnh Gen Z retro nhiều cảm xúc"
-           caption="// mood lên bổng xuống trầm"
-           rotate="-rotate-2 md:order-1"
-         />
-         <div className="border-l-4 border-mustard pl-6 md:order-2">
-           <span className="font-heading text-7xl font-700 text-mustard/40">
-             02
-           </span>
-           <p className="text-pretty font-mono text-lg leading-relaxed text-cream">
-             {'Y hệt như những cung bậc cảm xúc, tâm trạng của tụi mình cũng "lên bổng xuống trầm", lúc dồn dập lúc thong thả mỗi ngày. Thế nên phương châm của tụi này là: '}
-             <span className="font-700 text-tomato">
-               {'Đang quạu thì ăn kiểu quạu, đang vui thì quẩy kiểu vui!'}
-             </span>
-           </p>
-         </div>
-       </div>
-     </div>
-   </section>
- )
+          <p className="font-mono text-base leading-relaxed text-blue">
+            Y hệt như những cung bậc cảm xúc, tâm trạng của tụi mình cũng
+            &quot;lên bổng xuống trầm&quot;, lúc dồn dập lúc thong thả mỗi
+            ngày. Thế nên phương châm của tụi này là:{""}
+            <span className="font-bold text-tomato">
+              Đang quạu thì ăn kiểu quạu, đang vui thì quẩy kiểu vui!
+            </span>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
 }

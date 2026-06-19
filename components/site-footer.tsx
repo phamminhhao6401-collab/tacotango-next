@@ -1,18 +1,28 @@
-'use client'
-
-import Image from 'next/image'
-
 export function SiteFooter() {
   return (
-    <footer className="border-t-2 border-mustard bg-blue py-12">
-      <div className="mx-auto max-w-6xl px-4 text-center">
-        <p className="font-heading text-mustard uppercase tracking-widest">
-          Taco Tango — Walking Tacos Since 2026
-        </p>
-        <p className="mt-4 font-mono text-sm text-cream/70">
-          © 2026 Taco Tango. Quẩy hết mình, ăn hết nấc!
-        </p>
+    <footer className="border-t-4 border-blue bg-blue px-4 py-12 text-mustard sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="font-saigon3 text-2xl">
+            TACO<span className="text-tomato">TANGO</span>
+          </p>
+          <p className="mt-2 max-w-xs font-saigon3 text-sm text-mustard/80">
+            Đang quạu thì ăn kiểu quạu, đang vui thì quẩy kiểu vui!
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2 font-saigon3 text-sm">
+          <span className="font-bold uppercase tracking-wide text-tomato">
+            Theo dõi
+          </span>
+          <span>tacotango.id.vn</span>
+          <span>tacotango2026@gmail.com</span>
+        </div>
       </div>
+
+      <p className="mx-auto mt-10 max-w-6xl border-t-3 border-mustard/30 pt-6 font-mono text-xs text-mustard/60">
+        © {new Date().getFullYear()} Taco Tango. All rights reserved.
+      </p>
     </footer>
-  )
+  );
 }

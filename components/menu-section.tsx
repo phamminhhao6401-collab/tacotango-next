@@ -1,90 +1,117 @@
-'use client'
+"use client";
 
-
-import Image from 'next/image'
-import { Plus } from 'lucide-react'
-import { MENU, formatVND, type MenuItem } from '@/lib/menu-data'
-import { useCart } from '@/components/cart-context'
-
-
-function MenuCard({ item }: { item: MenuItem }) {
- const { addItem } = useCart()
- return (
-   <article className="flex flex-col overflow-hidden border-2 border-mustard bg-card shadow-[6px_6px_0_#E03C31]">
-     <div className="relative aspect-square w-full overflow-hidden border-b-2 border-mustard">
-       <Image
-         src={item.image || '/placeholder.svg'}
-         alt={item.name}
-         fill
-         className="object-cover"
-       />
-       <span className="absolute left-3 top-3 -rotate-2 border-2 border-blue bg-mustard px-3 py-1 font-heading text-xs font-700 uppercase text-blue">
-         {item.mood}
-       </span>
-     </div>
-
-
-     <div className="flex flex-1 flex-col p-5">
-       <h3 className="font-heading text-2xl font-700 uppercase text-mustard">
-         {item.name}
-       </h3>
-       <p className="mt-1 font-mono text-sm font-700 text-tomato">
-         {item.description}
-       </p>
-       <p className="mt-2 flex-1 font-mono text-sm leading-relaxed text-cream/80">
-         {item.ingredients}
-       </p>
-
-
-       <div className="mt-5 flex items-center justify-between gap-3">
-         <span className="font-heading text-2xl font-700 text-mustard">
-           {formatVND(item.price)}
-         </span>
-         <button
-           onClick={() => addItem(item)}
-           className="inline-flex items-center gap-1.5 rounded-sm border-2 border-blue bg-tomato px-4 py-2 font-heading text-sm font-700 uppercase tracking-wide text-primary-foreground shadow-[3px_3px_0_#0F2557] transition-transform hover:-translate-y-0.5"
-         >
-           <Plus className="h-4 w-4" />
-           Thêm vào giỏ
-         </button>
-       </div>
-     </div>
-   </article>
- )
-}
-
+import Image from "next/image";
+import { Plus, Check } from "lucide-react";
+import { useState } from "react";
+import { MENU, formatVND } from "@/lib/menu-data";
+import { useCart } from "@/components/cart-provider";
 
 export function MenuSection() {
- const top = MENU.slice(0, 3)
- const bottom = MENU.slice(3)
+  const { addItem } = useCart();
+  const [justAdded, setJustAdded] = useState<string | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
+  function handleAdd(id: string) {
+    const item = MENU.find((m) => m.id === id);
+    if (!item) return;
+    addItem(item);
+    setJustAdded(id);
+    setTimeout(() => setJustAdded((cur) => (cur === id ? null : cur)), 1200);
+  }
 
- return (
-   <section id="menu" className="bg-blue py-20 film-grain-section">
-     <div className="mx-auto max-w-6xl px-4">
-       <div className="mb-14 text-center">
-         <p className="font-mono text-sm font-700 uppercase tracking-widest text-tomato">
-           
-         </p>
-         <h2 className="skew-retro mt-2 inline-block font-heading text-5xl font-700 uppercase text-mustard drop-shadow-[4px_4px_0_#E03C31] sm:text-6xl">
-           Ăn theo tâm trạng
-         </h2>
-       </div>
+  return (
+    <section id="menu" className="bg-mustard px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-12 flex flex-col gap-3">
+          <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">
+            Thực đơn
+          </span>
+          <h2 className="font-saigon2 text-4xl text-blue sm:text-5xl">
+            5 vị, mỗi vị một điệu nhảy
+          </h2>
+        </div>
 
+        <div className="flex flex-wrap justify-center gap-6">
+          {MENU.map((taco) => {
+            const imageBroken = brokenImages[taco.id];
+            return (
+              <article
+                key={taco.id}
+                className="group flex w-full max-w-[360px] flex-col justify-between overflow-hidden rounded-2xl border-3 border-blue bg-cream shadow-retro transition-transform hover:-translate-y-1"
+              >
+                {/* --- KHU VỰC ẢNH MÓN ĂN --- */}
+                <div className="relative aspect-[4/3] w-full border-b-3 border-blue bg-mustard">
+                  {!imageBroken ? (
+                    <Image
+                      src={taco.image}
+                      alt={taco.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={() =>
+                        setBrokenImages((prev) => ({ ...prev, [taco.id]: true }))
+                      }
+                    />
+                  ) : (
+                    // Ảnh chưa có / lỗi đường dẫn -> hiện emoji thay thế, không vỡ layout
+                    <span className="grid h-full w-full place-items-center text-6xl">
+                      {taco.emoji}
+                    </span>
+                  )}
 
-       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-         {top.map((item) => (
-           <MenuCard key={item.id} item={item} />
-         ))}
-       </div>
+                  {taco.tag && (
+                    <span className="absolute right-3 top-3 z-10 rounded-full border-2 border-blue bg-tomato px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-cream shadow-retro-sm">
+                      {taco.tag}
+                    </span>
+                  )}
 
+                  {taco.emoji && (
+                    <span className="absolute -bottom-5 left-4 z-10 grid h-10 w-10 place-items-center rounded-full border-3 border-blue bg-mustard text-lg shadow-retro-sm">
+                      {taco.emoji}
+                    </span>
+                  )}
+                </div>
 
-       <div className="mx-auto mt-8 grid max-w-3xl gap-8 sm:grid-cols-2">
-         {bottom.map((item) => (
-           <MenuCard key={item.id} item={item} />
-         ))}
-       </div>
-     </div>
-   </section>
- )
+                {/* --- KHU VỰC THÔNG TIN --- */}
+                <div className="flex flex-1 flex-col justify-between p-6 pt-8">
+                  <div>
+                    <h3 className="font-saigon3 text-2xl text-blue">
+                      {taco.name}
+                    </h3>
+                    <p className="mt-2 font-saigon3 text-sm leading-relaxed text-blue/80">
+                      {taco.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-between border-t-3 border-blue pt-4">
+                    <span className="font-saigon3 text-xl text-tomato">
+                      {formatVND(taco.price)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleAdd(taco.id)}
+                      aria-label={`Thêm ${taco.name} vào giỏ`}
+                      className="flex items-center gap-1.5 rounded-full border-3 border-blue bg-blue px-4 py-2 font-saigon3 text-xs font-bold uppercase tracking-wide text-mustard transition-colors hover:bg-tomato active:translate-y-0.5"
+                    >
+                      {justAdded === taco.id ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                          Đã thêm
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3.5 w-3.5" strokeWidth={3} />
+                          Thêm
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }
