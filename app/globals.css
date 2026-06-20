@@ -22,7 +22,7 @@
 @layer utilities {
   .text-stroke-blue {
     /* Đã thay đổi: Dùng hàm theme() để lấy màu xanh (#1e3a8a) động từ config */
-    -webkit-text-stroke: 1.5px theme('colors.blue');
+    -webkit-text-stroke: 1.5px theme('colors.blue.500');
   }
 
   .grain-overlay {

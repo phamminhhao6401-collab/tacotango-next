@@ -65,7 +65,7 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
-// Validate ../../app/api/send-email/route.ts
+// Validate ../../app/api/send-email/route.tsx
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/send-email">> = Specific
   const handler = {} as typeof import("../../app/api/send-email/route.js")

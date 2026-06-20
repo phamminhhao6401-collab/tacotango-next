@@ -13,9 +13,10 @@ type FormState = {
   email: string;
   phone: string;
   address: string;
+  note: string; // Đã thêm trường note
 };
 
-const INITIAL_FORM: FormState = { name: "", email: "", phone: "", address: "" };
+const INITIAL_FORM: FormState = { name: "", email: "", phone: "", address: "", note: "" };
 
 export default function CheckoutPage() {
   const { items, increment, decrement, removeItem, subtotal, clearCart, isMounted } =
@@ -54,6 +55,7 @@ export default function CheckoutPage() {
           email: form.email,
           phone: form.phone,
           address: form.address,
+          note: form.note, // Đã thêm trường note vào body gửi đi
           items: items,
           subtotal: subtotal
         }),
@@ -93,11 +95,11 @@ export default function CheckoutPage() {
             Đặt hàng thành công!
           </h1>
           <p className="max-w-md font-saigon3 text-base text-blue">
-            Bếp đang nóng lên rồi. Chúng tôi đã gửi email xác nhận và sẽ liên hệ qua số điện thoại bạn để lại để giao taco nóng hổi.
+            Bếp đang nóng lên rồi. Chúng tôi đã gửi email xác nhận qua email bạn để lại để giao taco nóng hổi.
           </p>
           <Link
             href="/"
-            className="mt-2 flex items-center gap-2 rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold uppercase tracking-wide text-mustard shadow-tomato transition-transform hover:-translate-y-1"
+            className="mt-2 flex items-center gap-2 rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold normal-case tracking-wide text-mustard shadow-tomato transition-transform hover:-translate-y-1"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
             Về trang chủ gọi thêm món
@@ -114,7 +116,7 @@ export default function CheckoutPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
         <div className="mb-10 flex flex-col gap-3">
-          <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">
+          <span className="font-saigon3 text-xs font-bold normal-case tracking-[0.3em] text-tomato">
             Xác nhận đặt hàng
           </span>
           <h1 className="font-saigon2 text-3xl text-blue sm:text-4xl">
@@ -127,7 +129,7 @@ export default function CheckoutPage() {
             <p>Giỏ hàng đang trống. Hãy chọn vài món taco trước khi quay lại đây.</p>
             <Link
               href="/#menu"
-              className="mt-6 inline-flex rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold uppercase tracking-wide text-mustard"
+              className="mt-6 inline-flex rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold normal-case tracking-wide text-mustard"
             >
               Xem thực đơn
             </Link>
@@ -135,62 +137,26 @@ export default function CheckoutPage() {
         ) : (
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <section aria-label="Danh sách món đã chọn" className="flex flex-col gap-4">
+              {/* ... (Giữ nguyên danh sách món) */}
               {items.map((line) => (
-                <article
-                  key={line.id}
-                  className="flex items-center gap-4 rounded-2xl border-3 border-blue bg-cream p-4 shadow-retro-sm"
-                >
-                  <span className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-full border-3 border-blue bg-mustard text-2xl">
-                    {line.emoji}
-                  </span>
-
+                <article key={line.id} className="flex items-center gap-4 rounded-2xl border-3 border-blue bg-cream p-4 shadow-retro-sm">
+                  <span className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-full border-3 border-blue bg-mustard text-2xl">{line.emoji}</span>
                   <div className="flex-1">
                     <h3 className="font-saigon3 text-base text-blue">{line.name}</h3>
-                    <p className="font-saigon3 text-sm text-tomato">
-                      {formatVND(line.price)}
-                    </p>
+                    <p className="font-saigon3 text-sm text-tomato">{formatVND(line.price)}</p>
                   </div>
-
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => decrement(line.id)}
-                      aria-label={`Giảm số lượng ${line.name}`}
-                      className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue hover:bg-blue hover:text-mustard"
-                    >
-                      <Minus className="h-3.5 w-3.5" strokeWidth={3} />
-                    </button>
-                    <span className="w-6 text-center font-saigon3 font-bold text-blue">
-                      {line.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => increment(line.id)}
-                      aria-label={`Tăng số lượng ${line.name}`}
-                      className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue hover:bg-blue hover:text-mustard"
-                    >
-                      <Plus className="h-3.5 w-3.5" strokeWidth={3} />
-                    </button>
+                    <button type="button" onClick={() => decrement(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue hover:bg-blue hover:text-mustard"><Minus className="h-3.5 w-3.5" strokeWidth={3} /></button>
+                    <span className="w-6 text-center font-saigon3 font-bold text-blue">{line.quantity}</span>
+                    <button type="button" onClick={() => increment(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue hover:bg-blue hover:text-mustard"><Plus className="h-3.5 w-3.5" strokeWidth={3} /></button>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => removeItem(line.id)}
-                    aria-label={`Xóa ${line.name} khỏi giỏ`}
-                    className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border-2 border-blue text-blue hover:border-tomato hover:text-tomato"
-                  >
-                    <Trash2 className="h-4 w-4" strokeWidth={2.5} />
-                  </button>
+                  <button type="button" onClick={() => removeItem(line.id)} className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border-2 border-blue text-blue hover:border-tomato hover:text-tomato"><Trash2 className="h-4 w-4" strokeWidth={2.5} /></button>
                 </article>
               ))}
 
               <div className="flex items-center justify-between rounded-2xl border-3 border-blue bg-blue p-5 font-mono text-mustard">
-                <span className="font-saigon3 text-lg uppercase tracking-wide">
-                  Tổng cộng
-                </span>
-                <span className="font-saigon2 text-2xl text-tomato">
-                  {formatVND(subtotal)}
-                </span>
+                <span className="font-saigon3 text-lg normal-case tracking-wide">Tổng cộng</span>
+                <span className="font-saigon2 text-2xl text-tomato">{formatVND(subtotal)}</span>
               </div>
             </section>
 
@@ -204,7 +170,7 @@ export default function CheckoutPage() {
                 </h2>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="name" className="font-saigon2 text-xs font-bold uppercase tracking-wide text-blue">
+                  <label htmlFor="name" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
                     Họ và tên
                   </label>
                   <input
@@ -216,13 +182,11 @@ export default function CheckoutPage() {
                     placeholder="Nguyễn Văn A"
                     className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
                   />
-                  {errors.name && (
-                    <span className="font-saigon3 text-xs text-tomato">{errors.name}</span>
-                  )}
+                  {errors.name && <span className="font-mono text-xs text-tomato">{errors.name}</span>}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="email" className="font-saigon2 text-xs font-bold uppercase tracking-wide text-blue">
+                  <label htmlFor="email" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
                     Địa chỉ Email
                   </label>
                   <input
@@ -234,13 +198,11 @@ export default function CheckoutPage() {
                     placeholder="khachhang@example.com"
                     className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
                   />
-                  {errors.email && (
-                    <span className="font-saigon3 text-xs text-tomato">{errors.email}</span>
-                  )}
+                  {errors.email && <span className="font-mono text-xs text-tomato">{errors.email}</span>}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="phone" className="font-saigon2 text-xs font-bold uppercase tracking-wide text-blue">
+                  <label htmlFor="phone" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
                     Số điện thoại
                   </label>
                   <input
@@ -252,13 +214,11 @@ export default function CheckoutPage() {
                     placeholder="0901 234 567"
                     className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
                   />
-                  {errors.phone && (
-                    <span className="font-saigon3 text-xs text-tomato">{errors.phone}</span>
-                  )}
+                  {errors.phone && <span className="font-mono text-xs text-tomato">{errors.phone}</span>}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="address" className="font-saigon2 text-xs font-bold uppercase tracking-wide text-blue">
+                  <label htmlFor="address" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
                     Địa chỉ giao hàng
                   </label>
                   <textarea
@@ -267,17 +227,32 @@ export default function CheckoutPage() {
                     rows={3}
                     value={form.address}
                     onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-                    placeholder="Số nhà, đường, quận, ghi chú độ cay..."
+                    placeholder="Số nhà, đường, quận..."
                     className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
                   />
-                  {errors.address && (
-                    <span className="font-saigon3 text-xs text-tomato">{errors.address}</span>
-                  )}
+                  {errors.address && <span className="font-mono text-xs text-tomato">{errors.address}</span>}
+                </div>
+
+                {/* Ô Ghi chú mới */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="note" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
+                    Ghi chú thêm
+                  </label>
+                  <textarea
+                    id="note"
+                    name="note"
+                    rows={2}
+                    value={form.note}
+                    onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+                    placeholder="Ví dụ: Thêm cay, giao buổi chiều..."
+                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
+                  />
+                  {errors.note && <span className="font-mono text-xs text-tomato">{errors.note}</span>}
                 </div>
 
                 <button
                   type="submit"
-                  className="mt-2 rounded-full border-3 border-blue bg-tomato px-6 py-3.5 font-saigon3 text-sm font-bold uppercase tracking-wide text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                  className="mt-2 rounded-full border-3 border-blue bg-tomato px-6 py-3.5 font-saigon3 text-sm font-bold normal-case tracking-wide text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
                 >
                   Xác nhận đặt hàng
                 </button>
