@@ -26,10 +26,10 @@ const config: Config = {
       },
       fontFamily: {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
-        heading: ["var(--font-heading)", "Impact", "sans-serif"],
-        saigon1: ["var(--font-saigon1)", "Impact", "sans-serif"],
-        saigon2: ["var(--font-saigon2)", "Impact", "sans-serif"],
-        saigon3: ["var(--font-saigon3)", "Impact", "sans-serif"],
+        heading: ["var(--font-heading)", "sans-serif"],
+        saigon1: ["var(--font-saigon1)", "sans-serif"],
+        saigon2: ["var(--font-saigon2)", "sans-serif"],
+        saigon3: ["var(--font-saigon3)", "sans-serif"],
       },
       boxShadow: {
         retro: "6px 6px 0 0 #1E3A8A",

@@ -38,9 +38,9 @@ const saigon3 = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Taco Tango — Taco đi bộ cùng tụi mình thoai!",
+  title: "Taco Tango",
   description:
-    "Taco Tango: quầy taco đường phố phong cách retro Mexico, nơi mỗi cuộn bánh là một điệu tango vị giác.",
+    "Taco Tango",
 };
 
 export default function RootLayout({

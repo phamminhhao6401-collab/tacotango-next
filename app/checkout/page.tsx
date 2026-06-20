@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Minus, Plus, Trash2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { formatVND } from "@/lib/menu-data";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { useState, type FormEvent } from "react";
 
 type FormState = {
   name: string;
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validate(): boolean {
     const nextErrors: Partial<FormState> = {};
@@ -45,6 +46,8 @@ export default function CheckoutPage() {
     event.preventDefault();
     if (items.length === 0) return;
     if (!validate()) return;
+
+    setIsSubmitting(true);
 
     try {
       const response = await fetch('/api/send-email', {
@@ -69,6 +72,9 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error(error);
       alert("Có lỗi xảy ra khi đặt hàng, vui lòng thử lại!");
+    }
+    finally {
+      setIsSubmitting(false); // Kết thúc loading
     }
   }
 
@@ -180,13 +186,13 @@ export default function CheckoutPage() {
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     placeholder="Nguyễn Văn A"
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
+                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
                   />
-                  {errors.name && <span className="font-mono text-xs text-tomato">{errors.name}</span>}
+                  {errors.name && <span className="font-mono text-sm text-tomato">{errors.name}</span>}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="email" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
+                  <label htmlFor="email" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
                     Địa chỉ Email
                   </label>
                   <input
@@ -196,13 +202,13 @@ export default function CheckoutPage() {
                     value={form.email}
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     placeholder="khachhang@example.com"
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
+                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
                   />
-                  {errors.email && <span className="font-mono text-xs text-tomato">{errors.email}</span>}
+                  {errors.email && <span className="font-mono text-sm text-tomato">{errors.email}</span>}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="phone" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
+                  <label htmlFor="phone" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
                     Số điện thoại
                   </label>
                   <input
@@ -212,13 +218,13 @@ export default function CheckoutPage() {
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                     placeholder="0901 234 567"
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
+                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
                   />
-                  {errors.phone && <span className="font-mono text-xs text-tomato">{errors.phone}</span>}
+                  {errors.phone && <span className="font-mono text-sm text-tomato">{errors.phone}</span>}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="address" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
+                  <label htmlFor="address" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
                     Địa chỉ giao hàng
                   </label>
                   <textarea
@@ -228,14 +234,14 @@ export default function CheckoutPage() {
                     value={form.address}
                     onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
                     placeholder="Số nhà, đường, quận..."
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
+                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
                   />
-                  {errors.address && <span className="font-mono text-xs text-tomato">{errors.address}</span>}
+                  {errors.address && <span className="font-mono text-sm text-tomato">{errors.address}</span>}
                 </div>
 
                 {/* Ô Ghi chú mới */}
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="note" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
+                  <label htmlFor="note" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
                     Ghi chú thêm
                   </label>
                   <textarea
@@ -245,14 +251,15 @@ export default function CheckoutPage() {
                     value={form.note}
                     onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
                     placeholder="Ví dụ: Thêm cay, giao buổi chiều..."
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-saigon3 text-sm text-blue placeholder:text-blue/40 focus:outline-none"
+                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
                   />
-                  {errors.note && <span className="font-mono text-xs text-tomato">{errors.note}</span>}
+                  {errors.note && <span className="font-mono text-sm text-tomato">{errors.note}</span>}
                 </div>
 
                 <button
                   type="submit"
-                  className="mt-2 rounded-full border-3 border-blue bg-tomato px-6 py-3.5 font-saigon3 text-sm font-bold normal-case tracking-wide text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                  disabled={isSubmitting}
+                  className="mt-2 rounded-full border-3 border-blue bg-tomato px-6 py-3.5 font-saigon3 text-sm font-bolcase tracking-wide text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
                 >
                   Xác nhận đặt hàng
                 </button>

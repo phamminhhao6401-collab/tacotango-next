@@ -16,7 +16,7 @@ export const MENU: TacoItem[] = [
     price: 45000,
     emoji: "🍗",
     tag: "Ngọt ngào, giòn rụm",
-    image: "https://tacotango.id.vn/images/milonga.png",
+    image: "/images/milonga.png",
   },
   {
     id: "vals",
@@ -25,7 +25,7 @@ export const MENU: TacoItem[] = [
     price: 42000,
     emoji: "🧀",
     tag: "Chua chua thanh thanh",
-    image: "https://tacotango.id.vn/images/vals.jpg",
+    image: "/images/vals.jpg",
   },
   {
     id: "nuevo",
@@ -34,7 +34,7 @@ export const MENU: TacoItem[] = [
     price: 49000,
     emoji: "🥩",
     tag: "Đậm đà vị BBQ",
-    image: "https://tacotango.id.vn/images/nuevo.jpg",
+    image: "/images/nuevo.jpg",
   },
   {
     id: "lento",
@@ -43,7 +43,7 @@ export const MENU: TacoItem[] = [
     price: 38000,
     emoji: "🥑",
     tag: "Ngập ngụa phô mai",
-    image: "https://tacotango.id.vn/images/lento.jpg",
+    image: "/images/lento.jpg",
   },
   {
     id: "layumba",
@@ -52,7 +52,7 @@ export const MENU: TacoItem[] = [
     price: 52000,
     emoji: "🔥",
     tag: "Cay xé lưỡi, bùng nổ",
-    image: "https://tacotango.id.vn/images/layumba.jpg",
+    image: "/images/layumba.jpg",
   },
 ];
 
