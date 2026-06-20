@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       react: (
         <EmailTemplate 
           name={name} 
+          email={email}
           items={items} 
           subtotal={subtotal} 
           phone={phone} 

@@ -8,6 +8,7 @@ interface EmailTemplateProps {
   phone: string;
   address: string;
   note: string;
+  email: string;
 }
 
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
@@ -17,6 +18,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   phone,
   address,
   note,
+  email,
 }) => (
   <Html>
     <Head />
@@ -26,6 +28,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
         
         <Section style={{ marginBottom: '20px' }}>
           <Text style={{ margin: '5px 0' }}><strong>SĐT:</strong> {phone}</Text>
+          <Text style={{ margin: '5px 0' }}><strong>Email:</strong> {email}</Text>
           <Text style={{ margin: '5px 0' }}><strong>Địa chỉ:</strong> {address}</Text>
           {note && (
             <Text style={{ margin: '10px 0', padding: '10px', backgroundColor: '#ffe5e5', borderRadius: '8px', border: '1px solid #ffccc7' }}>
