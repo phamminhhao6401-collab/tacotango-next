@@ -26,7 +26,8 @@ export function MenuSection() {
           <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">
             Thực đơn
           </span>
-          <h2 className="font-saigon2 text-4xl text-blue sm:text-5xl">
+          {/* Đã thêm tracking-wider ở đây */}
+          <h2 className="font-saigon2 text-4xl tracking-wider text-blue sm:text-5xl">
             5 vị, mỗi vị một điệu nhảy
           </h2>
         </div>
@@ -39,7 +40,6 @@ export function MenuSection() {
                 key={taco.id}
                 className="group flex w-full max-w-[360px] flex-col justify-between overflow-hidden rounded-2xl border-3 border-blue bg-cream shadow-retro transition-transform hover:-translate-y-1"
               >
-                {/* --- KHU VỰC ẢNH MÓN ĂN --- */}
                 <div className="relative aspect-[4/3] w-full border-b-3 border-blue bg-mustard">
                   {!imageBroken ? (
                     <Image
@@ -53,7 +53,6 @@ export function MenuSection() {
                       }
                     />
                   ) : (
-                    // Ảnh chưa có / lỗi đường dẫn -> hiện emoji thay thế, không vỡ layout
                     <span className="grid h-full w-full place-items-center text-6xl">
                       {taco.emoji}
                     </span>
@@ -72,13 +71,13 @@ export function MenuSection() {
                   )}
                 </div>
 
-                {/* --- KHU VỰC THÔNG TIN --- */}
                 <div className="flex flex-1 flex-col justify-between p-6 pt-8">
                   <div>
-                    <h3 className="font-saigon3 text-2xl text-blue">
+                    {/* Đã thêm tracking-wider ở đây */}
+                    <h3 className="font-saigon3 text-2xl tracking-wider text-blue">
                       {taco.name}
                     </h3>
-                    <p className="mt-2 font-saigon3 text-sm leading-relaxed text-blue/80">
+                    <p className="mt-2 font-mono text-sm leading-relaxed text-blue/80">
                       {taco.description}
                     </p>
                   </div>

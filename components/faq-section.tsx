@@ -32,10 +32,12 @@ export function FaqSection() {
     >
       <div className="mx-auto max-w-3xl">
         <div className="mb-10 flex flex-col gap-3">
+          {/* Giữ nguyên uppercase/tracking cũ vì đây là nhãn nhỏ */}
           <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">
             Hỏi đáp
           </span>
-          <h2 className="font-saigon2 text-3xl text-blue sm:text-4xl">
+          {/* Thêm tracking-wider cho tiêu đề lớn */}
+          <h2 className="font-saigon2 text-3xl tracking-wider text-blue sm:text-4xl">
             Thắc mắc thường gặp
           </h2>
         </div>
@@ -52,7 +54,8 @@ export function FaqSection() {
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                   aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-saigon3 text-base text-blue sm:text-lg"
+                  // Thêm tracking-wider cho câu hỏi
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-saigon3 text-base tracking-wider text-blue sm:text-lg"
                 >
                   {faq.q}
                   <ChevronDown
@@ -63,7 +66,7 @@ export function FaqSection() {
                   />
                 </button>
                 {isOpen && (
-                  <p className="border-t-3 border-blue px-5 py-4 font-saigon3 font-normal text-sm leading-relaxed text-blue">
+                  <p className="border-t-3 border-blue px-5 py-4 font-mono font-normal text-sm leading-relaxed text-blue">
                     {faq.a}
                   </p>
                 )}

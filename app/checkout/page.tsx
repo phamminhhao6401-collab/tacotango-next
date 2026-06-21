@@ -13,7 +13,7 @@ type FormState = {
   email: string;
   phone: string;
   address: string;
-  note: string; // Đã thêm trường note
+  note: string;
 };
 
 const INITIAL_FORM: FormState = { name: "", email: "", phone: "", address: "", note: "" };
@@ -29,15 +29,12 @@ export default function CheckoutPage() {
   function validate(): boolean {
     const nextErrors: Partial<FormState> = {};
     if (!form.name.trim()) nextErrors.name = "Vui lòng nhập tên người nhận.";
-    
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       nextErrors.email = "Email không hợp lệ.";
     }
-
     if (!/^[0-9+\s]{8,12}$/.test(form.phone.trim()))
       nextErrors.phone = "Số điện thoại không hợp lệ.";
     if (!form.address.trim()) nextErrors.address = "Vui lòng nhập địa chỉ giao hàng.";
-    
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
@@ -46,69 +43,39 @@ export default function CheckoutPage() {
     event.preventDefault();
     if (items.length === 0) return;
     if (!validate()) return;
-
     setIsSubmitting(true);
-
     try {
       const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          address: form.address,
-          note: form.note, // Đã thêm trường note vào body gửi đi
-          items: items,
-          subtotal: subtotal
-        }),
+        body: JSON.stringify({ ...form, items, subtotal }),
       });
-
       if (!response.ok) throw new Error("Gửi email thất bại");
-
       clearCart();
       setOrderPlaced(true);
       setForm(INITIAL_FORM);
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra khi đặt hàng, vui lòng thử lại!");
-    }
-    finally {
-      setIsSubmitting(false); // Kết thúc loading
+      alert("Có lỗi xảy ra, vui lòng thử lại!");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-mustard">
-        <SiteHeader />
-        <main className="mx-auto max-w-3xl px-4 py-20 text-center font-saigon3 text-blue sm:px-6">
-          Đang tải giỏ hàng…
-        </main>
-      </div>
-    );
-  }
+  if (!isMounted) return <div className="min-h-screen bg-mustard"><SiteHeader /><main className="mx-auto max-w-3xl px-4 py-20 text-center font-saigon3 text-blue">Đang tải...</main></div>;
 
   if (orderPlaced) {
     return (
       <div className="min-h-screen bg-mustard">
         <SiteHeader />
-        <main className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-24 text-center sm:px-6">
+        <main className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-24 text-center">
           <span className="grid h-20 w-20 place-items-center rounded-full border-3 border-blue bg-tomato shadow-retro">
-            <CheckCircle2 className="h-10 w-10 text-cream" strokeWidth={2.5} />
+            <CheckCircle2 className="h-10 w-10 text-cream" />
           </span>
-          <h1 className="font-saigon3 text-3xl text-blue sm:text-4xl">
-            Đặt hàng thành công!
-          </h1>
-          <p className="max-w-md font-saigon3 text-base text-blue">
-            Bếp đang nóng lên rồi. Chúng tôi đã gửi email xác nhận qua email bạn để lại để giao taco nóng hổi.
-          </p>
-          <Link
-            href="/"
-            className="mt-2 flex items-center gap-2 rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold normal-case tracking-wide text-mustard shadow-tomato transition-transform hover:-translate-y-1"
-          >
-            <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
-            Về trang chủ gọi thêm món
+          <h1 className="font-saigon2 text-3xl tracking-wider text-blue">Đặt hàng thành công!</h1>
+          <p className="font-saigon3 text-base tracking-wide text-blue">Chúng tôi đã gửi email xác nhận.</p>
+          <Link href="/" className="mt-2 flex items-center gap-2 rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold tracking-wider text-mustard transition-transform hover:-translate-y-1">
+            <ArrowLeft className="h-4 w-4" /> Về trang chủ
           </Link>
         </main>
         <SiteFooter />
@@ -119,156 +86,65 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-mustard">
       <SiteHeader />
-
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+      <main className="mx-auto max-w-5xl px-4 py-16">
         <div className="mb-10 flex flex-col gap-3">
-          <span className="font-saigon3 text-xs font-bold normal-case tracking-[0.3em] text-tomato">
-            Xác nhận đặt hàng
-          </span>
-          <h1 className="font-saigon2 text-3xl text-blue sm:text-4xl">
-            Giỏ hàng của bạn
-          </h1>
+          <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">Xác nhận đặt hàng</span>
+          <h1 className="font-saigon2 text-3xl tracking-wider text-blue">Giỏ hàng của bạn</h1>
         </div>
 
         {items.length === 0 ? (
           <div className="rounded-2xl border-3 border-blue bg-cream p-10 text-center font-saigon3 text-blue shadow-retro">
-            <p>Giỏ hàng đang trống. Hãy chọn vài món taco trước khi quay lại đây.</p>
-            <Link
-              href="/#menu"
-              className="mt-6 inline-flex rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold normal-case tracking-wide text-mustard"
-            >
-              Xem thực đơn
-            </Link>
+            <p>Giỏ hàng đang trống.</p>
+            <Link href="/#menu" className="mt-6 inline-flex rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold tracking-wider text-mustard">Xem thực đơn</Link>
           </div>
         ) : (
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <section aria-label="Danh sách món đã chọn" className="flex flex-col gap-4">
-              {/* ... (Giữ nguyên danh sách món) */}
+            <section className="flex flex-col gap-4">
               {items.map((line) => (
                 <article key={line.id} className="flex items-center gap-4 rounded-2xl border-3 border-blue bg-cream p-4 shadow-retro-sm">
-                  <span className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-full border-3 border-blue bg-mustard text-2xl">{line.emoji}</span>
+                  <span className="grid h-14 w-14 place-items-center rounded-full border-3 border-blue bg-mustard text-2xl">{line.emoji}</span>
                   <div className="flex-1">
-                    <h3 className="font-saigon3 text-base text-blue">{line.name}</h3>
-                    <p className="font-saigon3 text-sm text-tomato">{formatVND(line.price)}</p>
+                    <h3 className="font-saigon3 text-base tracking-wide text-blue">{line.name}</h3>
+                    <p className="font-saigon3 text-sm tracking-wide text-tomato">{formatVND(line.price)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => decrement(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue hover:bg-blue hover:text-mustard"><Minus className="h-3.5 w-3.5" strokeWidth={3} /></button>
+                    <button type="button" onClick={() => decrement(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue"><Minus className="h-3.5 w-3.5" /></button>
                     <span className="w-6 text-center font-saigon3 font-bold text-blue">{line.quantity}</span>
-                    <button type="button" onClick={() => increment(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue hover:bg-blue hover:text-mustard"><Plus className="h-3.5 w-3.5" strokeWidth={3} /></button>
+                    <button type="button" onClick={() => increment(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue"><Plus className="h-3.5 w-3.5" /></button>
                   </div>
-                  <button type="button" onClick={() => removeItem(line.id)} className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border-2 border-blue text-blue hover:border-tomato hover:text-tomato"><Trash2 className="h-4 w-4" strokeWidth={2.5} /></button>
+                  <button type="button" onClick={() => removeItem(line.id)} className="grid h-9 w-9 place-items-center rounded-full border-2 border-blue text-blue"><Trash2 className="h-4 w-4" /></button>
                 </article>
               ))}
-
-              <div className="flex items-center justify-between rounded-2xl border-3 border-blue bg-blue p-5 font-mono text-mustard">
-                <span className="font-saigon3 text-lg normal-case tracking-wide">Tổng cộng</span>
-                <span className="font-saigon2 text-2xl text-tomato">{formatVND(subtotal)}</span>
+              <div className="flex items-center justify-between rounded-2xl border-3 border-blue bg-blue p-5 text-mustard">
+                <span className="font-saigon3 text-lg tracking-wider">Tổng cộng</span>
+                <span className="font-saigon2 text-2xl tracking-wider text-tomato">{formatVND(subtotal)}</span>
               </div>
             </section>
 
-            <section aria-label="Thông tin giao hàng">
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-5 rounded-2xl border-3 border-blue bg-mustard p-6 shadow-retro sm:p-8"
-              >
-                <h2 className="font-saigon2 text-xl text-blue">
-                  Thông tin nhận hàng
-                </h2>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="name" className="font-saigon2 text-xs font-bold tracking-[0.3em] text-blue">
-                    Họ và tên
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="Nguyễn Văn A"
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
-                  />
-                  {errors.name && <span className="font-mono text-sm text-tomato">{errors.name}</span>}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="email" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
-                    Địa chỉ Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    placeholder="khachhang@example.com"
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
-                  />
-                  {errors.email && <span className="font-mono text-sm text-tomato">{errors.email}</span>}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="phone" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
-                    Số điện thoại
-                  </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={form.phone}
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    placeholder="0901 234 567"
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
-                  />
-                  {errors.phone && <span className="font-mono text-sm text-tomato">{errors.phone}</span>}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="address" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
-                    Địa chỉ giao hàng
-                  </label>
-                  <textarea
-                    id="address"
-                    name="address"
-                    rows={3}
-                    value={form.address}
-                    onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-                    placeholder="Số nhà, đường, quận..."
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
-                  />
-                  {errors.address && <span className="font-mono text-sm text-tomato">{errors.address}</span>}
-                </div>
-
-                {/* Ô Ghi chú mới */}
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="note" className="font-saigon2 text-sm font-bold tracking-[0.3em] text-blue">
-                    Ghi chú thêm
-                  </label>
-                  <textarea
-                    id="note"
-                    name="note"
-                    rows={2}
-                    value={form.note}
-                    onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-                    placeholder="Ví dụ: Thêm cay, giao buổi chiều..."
-                    className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue placeholder:text-blue/40 focus:outline-none normal-case"
-                  />
-                  {errors.note && <span className="font-mono text-sm text-tomato">{errors.note}</span>}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="mt-2 rounded-full border-3 border-blue bg-tomato px-6 py-3.5 font-saigon3 text-sm font-bolcase tracking-wide text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  Xác nhận đặt hàng
+            <section>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5 rounded-2xl border-3 border-blue bg-mustard p-6 shadow-retro">
+                <h2 className="font-saigon2 text-xl tracking-wider text-blue">Thông tin nhận hàng</h2>
+                {["name", "email", "phone", "address", "note"].map((field) => (
+                  <div key={field} className="flex flex-col gap-1.5">
+                    <label htmlFor={field} className="font-saigon3 text-sm font-bold tracking-wider text-blue">
+                      {field === "name" ? "Họ và tên" : field === "email" ? "Địa chỉ Email" : field === "phone" ? "Số điện thoại" : field === "address" ? "Địa chỉ giao hàng" : "Ghi chú thêm"}
+                    </label>
+                    {field === "address" || field === "note" ? (
+                      <textarea id={field} rows={field === "address" ? 3 : 2} value={form[field as keyof FormState]} onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))} className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue focus:outline-none normal-case" />
+                    ) : (
+                      <input id={field} type={field === "email" ? "email" : "text"} value={form[field as keyof FormState]} onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))} className="rounded-xl border-3 border-blue bg-cream px-4 py-3 font-mono text-sm text-blue focus:outline-none normal-case" />
+                    )}
+                    {errors[field as keyof FormState] && <span className="font-mono text-sm text-tomato">{errors[field as keyof FormState]}</span>}
+                  </div>
+                ))}
+                <button type="submit" disabled={isSubmitting} className="mt-2 rounded-full border-3 border-blue bg-tomato px-6 py-3.5 font-saigon3 text-sm font-bold tracking-wider text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5">
+                  {isSubmitting ? "Đang gửi..." : "Xác nhận đặt hàng"}
                 </button>
               </form>
             </section>
           </div>
         )}
       </main>
-
       <SiteFooter />
     </div>
   );

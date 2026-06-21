@@ -7,7 +7,7 @@ export function Hero() {
       {/* Ảnh nền */}
       <Image
         src="/images/hero.jpg"
-        alt="Bụi bặm taco góc phố"
+        alt="Taco Tango thoai!!!"
         fill
         priority
         className="absolute inset-0 z-0 object-cover opacity-90"
@@ -38,13 +38,13 @@ export function Hero() {
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           <a
             href="#menu"
-            className="rounded-full border-3 border-cream bg-cream px-7 py-3 font-saigon3 text-sm font-bold uppercase tracking-wide text-blue shadow-tomato transition-transform hover:-translate-y-1 active:translate-y-0"
+            className="rounded-full border-3 border-cream bg-cream px-7 py-3 font-saigon3 text-sm font-bold uppercase tracking-wider text-blue shadow-tomato transition-transform hover:-translate-y-1 active:translate-y-0"
           >
             Xem thực đơn
           </a>
           <a
             href="#story"
-            className="flex items-center gap-2 rounded-full border-3 border-cream px-7 py-3 font-saigon3 text-sm font-bold uppercase tracking-wide text-cream transition-colors hover:bg-cream hover:text-blue"
+            className="flex items-center gap-2 rounded-full border-3 border-cream px-7 py-3 font-saigon3 text-sm font-bold uppercase tracking-wider text-cream transition-colors hover:bg-cream hover:text-blue"
           >
             Câu chuyện
             <ArrowDown className="h-4 w-4" strokeWidth={2.5} />
