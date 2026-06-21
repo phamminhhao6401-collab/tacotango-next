@@ -33,7 +33,7 @@ export function SiteHeader() {
             className="rotate-[-6deg] rounded-full border-3 border-blue bg-tomato shadow-retro-sm object-cover"
           />
           <span>
-            TACO<span className="text-tomato">TANGO</span>
+            TACO <span className="text-tomato">TANGO</span>
           </span>
         </Link>
 
@@ -55,7 +55,7 @@ export function SiteHeader() {
             href="/checkout"
             aria-label="Xem giỏ hàng"
             // Đã thêm tracking-wider ở đây
-            className="relative flex items-center gap-2 rounded-full border-3 border-blue bg-tomato px-4 py-2 font-saigon3 text-sm font-bold tracking-widest text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
+            className="relative flex items-center gap-2 rounded-full border-3 border-blue bg-tomato px-4 py-2 font-saigon3 text-sm font-bold tracking-wider text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <ShoppingBag className="h-4 w-4" strokeWidth={2.5} />
             <span className="hidden sm:inline">Giỏ hàng</span>
