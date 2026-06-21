@@ -62,7 +62,7 @@ export default function CheckoutPage() {
     }
   }
 
-  if (!isMounted) return <div className="min-h-screen bg-mustard"><SiteHeader /><main className="mx-auto max-w-3xl px-4 py-20 text-center font-saigon3 text-blue">Đang tải...</main></div>;
+  if (!isMounted) return <div className="min-h-screen bg-mustard"><SiteHeader /><main className="mx-auto max-w-3xl px-4 py-20 text-center font-saigon3 tracking-wider text-blue">Đang tải...</main></div>;
 
   if (orderPlaced) {
     return (
@@ -73,7 +73,7 @@ export default function CheckoutPage() {
             <CheckCircle2 className="h-10 w-10 text-cream" />
           </span>
           <h1 className="font-saigon2 text-3xl tracking-wider text-blue">Đặt hàng thành công!</h1>
-          <p className="font-saigon3 text-base tracking-wide text-blue">Chúng tôi đã gửi email xác nhận.</p>
+          <p className="font-saigon3 text-base tracking-wider text-blue">Chúng tôi đã gửi email xác nhận.</p>
           <Link href="/" className="mt-2 flex items-center gap-2 rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold tracking-wider text-mustard transition-transform hover:-translate-y-1">
             <ArrowLeft className="h-4 w-4" /> Về trang chủ
           </Link>
@@ -93,7 +93,7 @@ export default function CheckoutPage() {
         </div>
 
         {items.length === 0 ? (
-          <div className="rounded-2xl border-3 border-blue bg-cream p-10 text-center font-saigon3 text-blue shadow-retro">
+          <div className="rounded-2xl border-3 border-blue bg-cream p-10 text-center font-saigon3 tracking-wider text-blue shadow-retro">
             <p>Giỏ hàng đang trống.</p>
             <Link href="/#menu" className="mt-6 inline-flex rounded-full border-3 border-blue bg-blue px-6 py-3 font-saigon3 text-sm font-bold tracking-wider text-mustard">Xem thực đơn</Link>
           </div>
@@ -104,12 +104,12 @@ export default function CheckoutPage() {
                 <article key={line.id} className="flex items-center gap-4 rounded-2xl border-3 border-blue bg-cream p-4 shadow-retro-sm">
                   <span className="grid h-14 w-14 place-items-center rounded-full border-3 border-blue bg-mustard text-2xl">{line.emoji}</span>
                   <div className="flex-1">
-                    <h3 className="font-saigon3 text-base tracking-wide text-blue">{line.name}</h3>
-                    <p className="font-saigon3 text-sm tracking-wide text-tomato">{formatVND(line.price)}</p>
+                    <h3 className="font-saigon3 text-base tracking-wider text-blue">{line.name}</h3>
+                    <p className="font-saigon3 text-sm tracking-wider text-tomato">{formatVND(line.price)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button type="button" onClick={() => decrement(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue"><Minus className="h-3.5 w-3.5" /></button>
-                    <span className="w-6 text-center font-saigon3 font-bold text-blue">{line.quantity}</span>
+                    <span className="w-6 text-center font-saigon3 font-bold tracking-wider text-blue">{line.quantity}</span>
                     <button type="button" onClick={() => increment(line.id)} className="grid h-8 w-8 place-items-center rounded-full border-2 border-blue text-blue"><Plus className="h-3.5 w-3.5" /></button>
                   </div>
                   <button type="button" onClick={() => removeItem(line.id)} className="grid h-9 w-9 place-items-center rounded-full border-2 border-blue text-blue"><Trash2 className="h-4 w-4" /></button>
