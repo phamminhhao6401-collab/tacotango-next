@@ -1,24 +1,20 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-import type { TacoItem } from "@/lib/menu-data";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { TacoItem, Ingredient } from "@/lib/menu-data";
 
-export type CartLine = TacoItem & { quantity: number };
+export type CartLine = TacoItem & { 
+  cartId: string; 
+  quantity: number; 
+  selectedIngredients: Ingredient[] 
+};
 
 type CartContextValue = {
   items: CartLine[];
-  addItem: (item: TacoItem) => void;
-  removeItem: (id: string) => void;
-  increment: (id: string) => void;
-  decrement: (id: string) => void;
+  addItem: (item: TacoItem, selectedIngredients: Ingredient[]) => void;
+  removeItem: (cartId: string) => void;
+  increment: (cartId: string) => void;
+  decrement: (cartId: string) => void;
   clearCart: () => void;
   totalItems: number;
   subtotal: number;
@@ -26,7 +22,6 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
-
 const STORAGE_KEY = "taco-tango-cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -35,92 +30,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setIsMounted(true);
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setItems(JSON.parse(raw));
-      }
-    } catch {
-      // ignore corrupted storage
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        setItems(Array.isArray(parsed) ? parsed.map((item: any) => ({
+          ...item,
+          selectedIngredients: Array.isArray(item.selectedIngredients) ? item.selectedIngredients : []
+        })) : []);
+      } catch { setItems([]); }
     }
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch {
-      // ignore write errors
-    }
+    if (isMounted) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, isMounted]);
 
-  const addItem = useCallback((item: TacoItem) => {
+  const addItem = useCallback((item: TacoItem, selectedIngredients: Ingredient[]) => {
     setItems((prev) => {
-      const existing = prev.find((line) => line.id === item.id);
+      const cartId = `${item.id}-${selectedIngredients.map(i => i.id).sort().join(",")}`;
+      const existing = prev.find((line) => line.cartId === cartId);
       if (existing) {
-        return prev.map((line) =>
-          line.id === item.id ? { ...line, quantity: line.quantity + 1 } : line
-        );
+        return prev.map((line) => line.cartId === cartId ? { ...line, quantity: line.quantity + 1 } : line);
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, cartId, quantity: 1, selectedIngredients }];
     });
   }, []);
 
-  const removeItem = useCallback((id: string) => {
-    setItems((prev) => prev.filter((line) => line.id !== id));
-  }, []);
+  const totalItems = useMemo(() => items.reduce((sum, line) => sum + line.quantity, 0), [items]);
 
-  const increment = useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((line) =>
-        line.id === id ? { ...line, quantity: line.quantity + 1 } : line
-      )
-    );
-  }, []);
+  const subtotal = useMemo(() => items.reduce((sum, line) => {
+    // Lấy giá từng ingredient từ mảng selectedIngredients và cộng dồn
+    const ingPrice = (line.selectedIngredients || []).reduce((s, i) => s + i.price, 0);
+    return sum + line.quantity * (line.price + ingPrice);
+  }, 0), [items]);
 
-  const decrement = useCallback((id: string) => {
-    setItems((prev) =>
-      prev
-        .map((line) =>
-          line.id === id ? { ...line, quantity: line.quantity - 1 } : line
-        )
-        .filter((line) => line.quantity > 0)
-    );
-  }, []);
-
-  const clearCart = useCallback(() => {
-    setItems([]);
-  }, []);
-
-  const totalItems = useMemo(
-    () => items.reduce((sum, line) => sum + line.quantity, 0),
-    [items]
+  return (
+    <CartContext.Provider value={{ 
+      items, 
+      addItem, 
+      removeItem: (id) => setItems(prev => prev.filter(i => i.cartId !== id)), 
+      increment: (id) => setItems(prev => prev.map(i => i.cartId === id ? {...i, quantity: i.quantity + 1} : i)), 
+      decrement: (id) => setItems(prev => prev.map(i => i.cartId === id ? {...i, quantity: Math.max(1, i.quantity - 1)} : i)), 
+      clearCart: () => setItems([]), 
+      totalItems,
+      subtotal, 
+      isMounted 
+    }}>
+      {children}
+    </CartContext.Provider>
   );
-
-  const subtotal = useMemo(
-    () => items.reduce((sum, line) => sum + line.quantity * line.price, 0),
-    [items]
-  );
-
-  const value: CartContextValue = {
-    items,
-    addItem,
-    removeItem,
-    increment,
-    decrement,
-    clearCart,
-    totalItems,
-    subtotal,
-    isMounted,
-  };
-
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return ctx;
-}
+export const useCart = () => useContext(CartContext)!;

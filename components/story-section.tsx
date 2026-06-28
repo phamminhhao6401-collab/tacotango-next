@@ -45,17 +45,13 @@ export function StorySection() {
             Điệu nhảy và cảm xúc
           </h2>
           <p className="font-mono text-base leading-relaxed text-blue">
-            Chỉ cần nghe đến từ &quot;Tango&quot;, tâm trí bạn sẽ lập tức hòa vào
-            những nhịp điệu cuốn hút, sự chuyển động mượt mà và những biến tấu
-            không ngừng.
+            Taco Tango lấy cảm hứng từ điệu nhảy tango, nơi từng nhịp chuyển động luôn sôi động, cuốn hút và đầy cảm xúc. Cũng như tâm trạng mỗi ngày của tụi mình, có lúc vui, lúc chill, lúc deadline dí, lúc hơi quạu một chút, mỗi mood đều có một nhịp riêng.
           </p>
 
           <p className="font-mono text-base leading-relaxed text-blue">
-            Y hệt như những cung bậc cảm xúc, tâm trạng của tụi mình cũng
-            &quot;lên bổng xuống trầm&quot;, lúc dồn dập lúc thong thả mỗi
-            ngày. Thế nên phương châm của tụi này là:{""}
+            Từ đó, Taco Tango mang đến walking taco như một cách bắt nhịp cảm xúc bằng hương vị. Snack giòn rụm, topping đầy màu sắc và sốt đậm vị hòa vào nhau trong từng cú lắc, từng miếng cắn. Cầm lên là vui, ăn vào là đã.{" "}
             <span className="font-bold text-tomato">
-              Đang quạu thì ăn kiểu quạu, đang vui thì quẩy kiểu vui!
+              Taco Tango, giòn tan nhịp vangggggg!
             </span>
           </p>
         </div>

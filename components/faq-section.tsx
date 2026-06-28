@@ -10,11 +10,11 @@ const FAQS = [
   },
   {
     q: "Phí ship tính sao?",
-    a: "Đồng giá 15.000đ cho mọi đơn trong nội thành. Đặt từ 3 món là free luôn nha.",
+    a: "Đồng giá 15.000đ cho mọi đơn trong nội thành. Đơn trên 150k là free luôn nha.",
   },
   {
     q: "Tụi mình giao khi nào?",
-    a: "Tụi mình sẽ gom order rồi giao vào T3 và T6 hàng tuần. Tranh thủ đặt nha!!!",
+    a: "Tụi mình sẽ gom order rồi giao vào T4 và T5 hàng tuần. Tranh thủ đặt nha!!!",
   },
   {
     q: "Có món nào cho HỆ YẾU ĐUỐI không?",

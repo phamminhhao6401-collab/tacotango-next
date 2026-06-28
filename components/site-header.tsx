@@ -18,33 +18,21 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b-4 border-blue bg-mustard">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link
-          href="/"
-          // Đã thêm tracking-wider ở đây
-          className="flex items-center gap-2 font-saigon3 text-xl tracking-wider text-blue sm:text-2xl"
-        >
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-6">
+        <Link href="/" className="flex flex-shrink-0 items-center gap-0">
           <Image
-            src="/images/logo.png"
+            src="/images/PRIMARY LOGO@4x.png"
             alt="Taco Tango Logo"
-            width={40}
-            height={40}
+            width={100}
+            height={100}
             priority
-            className="rotate-[-6deg] rounded-full border-3 border-blue bg-tomato shadow-retro-sm object-cover"
+            className="object-contain"
           />
-          <span>
-            TACO <span className="text-tomato">TANGO</span>
-          </span>
         </Link>
 
-        {/* Đã thêm tracking-wider vào nav */}
         <nav className="hidden items-center gap-8 font-saigon3 text-sm font-bold uppercase tracking-wider text-blue md:flex">
           {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="relative transition-colors hover:text-tomato"
-            >
+            <Link key={link.href} href={link.href} className="relative transition-colors hover:text-tomato tracking-wider">
               {link.label}
             </Link>
           ))}
@@ -54,7 +42,6 @@ export function SiteHeader() {
           <Link
             href="/checkout"
             aria-label="Xem giỏ hàng"
-            // Đã thêm tracking-wider ở đây
             className="relative flex items-center gap-2 rounded-full border-3 border-blue bg-tomato px-4 py-2 font-saigon3 text-sm font-bold tracking-wider text-cream shadow-retro-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <ShoppingBag className="h-4 w-4" strokeWidth={2.5} />
@@ -68,7 +55,6 @@ export function SiteHeader() {
 
           <button
             type="button"
-            aria-label="Mở menu điều hướng"
             onClick={() => setOpen((v) => !v)}
             className="grid h-10 w-10 place-items-center rounded-full border-3 border-blue tracking-wider text-blue md:hidden"
           >
@@ -78,14 +64,9 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <nav className="flex flex-col gap-1 border-t-3 border-blue bg-mustard px-4 py-3 font-mono text-sm font-bold uppercase tracking-wide text-blue md:hidden">
+        <nav className="flex flex-col gap-1 border-t-3 border-blue bg-mustard px-4 py-3 font-mono text-sm font-bold uppercase tracking-wider text-blue md:hidden">
           {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="rounded-md px-2 py-2 hover:bg-blue hover:text-mustard"
-            >
+            <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className="rounded-md px-2 py-2 hover:bg-blue hover:text-mustard">
               {link.label}
             </Link>
           ))}
