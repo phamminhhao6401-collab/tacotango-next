@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link"; // Nhớ import Link
 import { Minus, Plus, CheckCircle2 } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { formatVND } from "@/lib/menu-data";
@@ -15,23 +16,55 @@ export default function CheckoutPage() {
   const { items, increment, decrement, subtotal, clearCart, isMounted } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", district: "", address: "", note: "" });
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch('/api/send-email', { method: 'POST', body: JSON.stringify({ ...form, items, subtotal, shippingFee, total }) });
-    if (res.ok) { clearCart(); setOrderPlaced(true); } else alert("Lỗi gửi đơn!");
+    setIsSubmitting(true);
+    
+    try {
+      const res = await fetch('/api/send-email', { 
+        method: 'POST', 
+        body: JSON.stringify({ ...form, items, subtotal, shippingFee, total }) 
+      });
+      
+      if (res.ok) { 
+        clearCart(); 
+        setOrderPlaced(true); 
+      } else { 
+        alert("Lỗi gửi đơn, vui lòng thử lại!"); 
+        setIsSubmitting(false);
+      }
+    } catch { 
+      alert("Lỗi kết nối, vui lòng thử lại!"); 
+      setIsSubmitting(false); 
+    }
   }
 
   if (!isMounted) return <div className="min-h-screen bg-mustard p-20 text-center">Đang tải...</div>;
-  if (orderPlaced) return <div className="min-h-screen bg-mustard flex flex-col items-center justify-center text-center"><CheckCircle2 size={64} className="text-tomato"/><h1 className="text-3xl text-blue font-saigon2">Đặt hàng thành công!</h1></div>;
+  
+  // Giao diện đặt hàng thành công đã được bổ sung nút Tiếp tục mua hàng
+  if (orderPlaced) return (
+    <div className="min-h-screen bg-mustard flex flex-col items-center justify-center text-center p-6">
+      <CheckCircle2 size={64} className="text-tomato mb-4"/>
+      <h1 className="text-3xl text-blue font-saigon2 mb-8">ĐẶT HÀNG THÀNH CÔNG!</h1>
+      <Link 
+        href="/#menu" 
+        className="bg-blue text-mustard px-8 py-4 rounded-full font-bold text-lg hover:bg-tomato transition-colors"
+      >
+        Tiếp tục mua hàng
+      </Link>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-mustard">
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 py-16 grid lg:grid-cols-2 gap-10">
+        {/* ... Phần hiển thị giỏ hàng và form giữ nguyên như cũ ... */}
         <section className="flex flex-col gap-4">
           {items.map((line) => (
             <div key={line.cartId} className="p-4 border-3 border-blue bg-cream rounded-2xl">
@@ -41,9 +74,9 @@ export default function CheckoutPage() {
               </div>
               {(line.selectedIngredients || []).map(ing => <p key={ing.id} className="text-xs text-tomato">+ {ing.name} ({formatVND(ing.price)})</p>)}
               <div className="flex items-center gap-2 mt-3 text-blue">
-                <button onClick={() => decrement(line.cartId)} className="p-1 border rounded"><Minus size={14}/></button>
+                <button type="button" onClick={() => decrement(line.cartId)} className="p-1 border rounded"><Minus size={14}/></button>
                 <span>{line.quantity}</span>
-                <button onClick={() => increment(line.cartId)} className="p-1 border rounded"><Plus size={14}/></button>
+                <button type="button" onClick={() => increment(line.cartId)} className="p-1 border rounded"><Plus size={14}/></button>
               </div>
             </div>
           ))}
@@ -53,6 +86,7 @@ export default function CheckoutPage() {
             <p className="text-2xl font-bold text-tomato">Tổng: {formatVND(total)}</p>
           </div>
         </section>
+        
         <form onSubmit={handleSubmit} className="bg-mustard p-6 rounded-2xl border-3 border-blue flex flex-col gap-4">
           <input required placeholder="Họ và tên" onChange={e => setForm({...form, name: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
           <input required type="email" placeholder="Email" onChange={e => setForm({...form, email: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
@@ -63,7 +97,14 @@ export default function CheckoutPage() {
           </select>
           <textarea required placeholder="Địa chỉ chi tiết" onChange={e => setForm({...form, address: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
           <textarea placeholder="Ghi chú thêm" onChange={e => setForm({...form, note: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
-          <button type="submit" className="bg-tomato text-white p-4 rounded-full font-bold">Xác nhận đặt hàng</button>
+          
+          <button 
+            type="submit" 
+            disabled={isSubmitting} 
+            className={`p-4 rounded-full font-bold text-white transition-opacity ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-tomato"}`}
+          >
+            {isSubmitting ? "Đang gửi đơn..." : "Xác nhận đặt hàng"}
+          </button>
         </form>
       </main>
       <SiteFooter />

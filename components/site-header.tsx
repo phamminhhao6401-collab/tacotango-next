@@ -21,7 +21,7 @@ export function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-6">
         <Link href="/" className="flex flex-shrink-0 items-center gap-0">
           <Image
-            src="/images/PRIMARY LOGO@4x.png"
+            src="/images/logontext.png"
             alt="Taco Tango Logo"
             width={100}
             height={100}
