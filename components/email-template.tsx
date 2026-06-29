@@ -13,7 +13,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
     <Head />
     <Body style={{ fontFamily: 'sans-serif', backgroundColor: '#ffffff', padding: '20px' }}>
       <Container style={{ maxWidth: '600px', border: '1px solid #ddd', borderRadius: '15px', padding: '30px', backgroundColor: '#fffdf5' }}>
-        <Heading style={{ color: '#1e3a8a', textAlign: 'center' }}>🌮 Đơn hàng mới: {name}</Heading>
+        <Heading style={{ color: '#4a2c2a', textAlign: 'center' }}>🌮 Đơn hàng mới: {name}</Heading>
         
         <Section style={{ marginBottom: '20px' }}>
           <Text><strong>Khách hàng:</strong> {name} - {phone}</Text>
@@ -39,7 +39,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
         
         <Text>Tạm tính: {subtotal.toLocaleString()}đ</Text>
         <Text>Phí ship: {shippingFee === 0 ? 'Miễn phí' : `${shippingFee.toLocaleString()}đ`}</Text>
-        <Heading as="h2" style={{ color: '#1e3a8a' }}>Tổng thanh toán: {total.toLocaleString()}đ</Heading>
+        <Heading as="h2" style={{ color: '#4a2c2a' }}>Tổng thanh toán: {total.toLocaleString()}đ</Heading>
       </Container>
     </Body>
   </Html>

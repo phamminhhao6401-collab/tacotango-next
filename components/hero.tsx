@@ -26,7 +26,7 @@ aria-hidden="true"
 <div className="relative z-30 mx-auto flex max-w-6xl flex-col items-center gap-10 text-center">
 <span className="inline-flex items-center gap-2 rounded-full border-3 border-blue bg-tomato px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-widest text-cream shadow-retro-sm">
 <Sparkles className="h-3.5 w-3.5" />
-TACO ĐI BỘ VÀO T4 &amp; T5 HÀNG TUẦN
+Giòn tan nhịp vangg!
 </span>
 
 <Image

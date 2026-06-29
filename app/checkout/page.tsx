@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link"; // Nhớ import Link
-import { Minus, Plus, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { Minus, Plus, CheckCircle2, Trash2, X } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { formatVND } from "@/lib/menu-data";
 import { SiteHeader } from "@/components/site-header";
@@ -13,7 +13,7 @@ const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
 
 export default function CheckoutPage() {
-  const { items, increment, decrement, subtotal, clearCart, isMounted } = useCart();
+  const { items, increment, decrement, removeItem, subtotal, clearCart, isMounted } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", district: "", address: "", note: "" });
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +46,6 @@ export default function CheckoutPage() {
 
   if (!isMounted) return <div className="min-h-screen bg-mustard p-20 text-center">Đang tải...</div>;
   
-  // Giao diện đặt hàng thành công đã được bổ sung nút Tiếp tục mua hàng
   if (orderPlaced) return (
     <div className="min-h-screen bg-mustard flex flex-col items-center justify-center text-center p-6">
       <CheckCircle2 size={64} className="text-tomato mb-4"/>
@@ -64,29 +63,60 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-mustard">
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 py-16 grid lg:grid-cols-2 gap-10">
-        {/* ... Phần hiển thị giỏ hàng và form giữ nguyên như cũ ... */}
+        
+        {/* CỘT TRÁI: GIỎ HÀNG HOẶC NÚT QUAY LẠI MENU */}
         <section className="flex flex-col gap-4">
-          {items.map((line) => (
-            <div key={line.cartId} className="p-4 border-3 border-blue bg-cream rounded-2xl">
-              <div className="flex justify-between font-bold text-blue">
-                <h3>{line.name}</h3>
-                <span className="text-sm opacity-70">{formatVND(line.price)}</span>
+          {items.length > 0 ? (
+            <>
+              {items.map((line) => (
+                <div key={line.cartId} className="p-4 border-3 border-blue bg-cream rounded-2xl">
+                  <div className="flex justify-between items-start font-bold text-blue">
+                    <h3>{line.name}</h3>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm opacity-70">{formatVND(line.price)}</span>
+                      <button 
+                        onClick={() => removeItem(line.cartId)} 
+                        className="text-tomato hover:text-blue transition-colors"
+                        aria-label="Xóa sản phẩm"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {(line.selectedIngredients || []).map(ing => (
+                    <p key={ing.id} className="text-xs text-tomato">+ {ing.name} ({formatVND(ing.price)})</p>
+                  ))}
+                  
+                  <div className="flex items-center gap-2 mt-3 text-blue">
+                    <button type="button" onClick={() => decrement(line.cartId)} className="p-1 border rounded"><Minus size={14}/></button>
+                    <span>{line.quantity}</span>
+                    <button type="button" onClick={() => increment(line.cartId)} className="p-1 border rounded"><Plus size={14}/></button>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="p-5 bg-blue text-mustard rounded-2xl">
+                <p>Tạm tính: {formatVND(subtotal)}</p>
+                <p>Phí ship: {shippingFee === 0 ? "Miễn phí" : formatVND(SHIPPING_FEE)}</p>
+                <p className="text-2xl font-bold text-tomato mt-2">Tổng: {formatVND(total)}</p>
               </div>
-              {(line.selectedIngredients || []).map(ing => <p key={ing.id} className="text-xs text-tomato">+ {ing.name} ({formatVND(ing.price)})</p>)}
-              <div className="flex items-center gap-2 mt-3 text-blue">
-                <button type="button" onClick={() => decrement(line.cartId)} className="p-1 border rounded"><Minus size={14}/></button>
-                <span>{line.quantity}</span>
-                <button type="button" onClick={() => increment(line.cartId)} className="p-1 border rounded"><Plus size={14}/></button>
-              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-10 border-3 border-dashed border-blue/30 rounded-2xl text-center">
+              <X size={48} className="text-blue/40 mb-4" />
+              <h2 className="text-2xl text-blue font-saigon2 mb-6">Giỏ hàng đang trống</h2>
+              <Link 
+                href="/#menu" 
+                className="bg-tomato text-white px-8 py-3 rounded-full font-bold hover:bg-blue transition-colors"
+              >
+                Vẫn còn đói? Xem menu tiếp nhé.
+              </Link>
             </div>
-          ))}
-          <div className="p-5 bg-blue text-mustard rounded-2xl">
-            <p>Tạm tính: {formatVND(subtotal)}</p>
-            <p>Phí ship: {shippingFee === 0 ? "Miễn phí" : formatVND(SHIPPING_FEE)}</p>
-            <p className="text-2xl font-bold text-tomato">Tổng: {formatVND(total)}</p>
-          </div>
+          )}
         </section>
         
+        {/* CỘT PHẢI: FORM THÔNG TIN */}
         <form onSubmit={handleSubmit} className="bg-mustard p-6 rounded-2xl border-3 border-blue flex flex-col gap-4">
           <input required placeholder="Họ và tên" onChange={e => setForm({...form, name: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
           <input required type="email" placeholder="Email" onChange={e => setForm({...form, email: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
@@ -100,8 +130,8 @@ export default function CheckoutPage() {
           
           <button 
             type="submit" 
-            disabled={isSubmitting} 
-            className={`p-4 rounded-full font-bold text-white transition-opacity ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-tomato"}`}
+            disabled={isSubmitting || items.length === 0} 
+            className={`p-4 rounded-full font-bold text-white transition-opacity ${isSubmitting || items.length === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-tomato"}`}
           >
             {isSubmitting ? "Đang gửi đơn..." : "Xác nhận đặt hàng"}
           </button>

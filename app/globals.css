@@ -7,22 +7,20 @@
     scroll-behavior: smooth;
   }
 
-  /* Đã thay đổi: Dùng @apply để lấy màu text và background từ Tailwind config */
   ::selection {
     @apply bg-tomato text-cream;
   }
 
-  /* Đã thay đổi: Dùng @apply để lấy màu viền (outline) từ Tailwind config */
   :focus-visible {
-  /* Bọc 3px trong ngoặc vuông để ép Tailwind tạo class theo đúng kích thước này */
-  @apply outline-[3px] outline-offset-[3px] outline-blue;
-}
+    /* Đã sửa: Tailwind sẽ tự tìm màu DEFAULT trong cấu trúc blue của bạn */
+    @apply outline-[3px] outline-offset-[3px] outline-blue;
   }
+}
 
 @layer utilities {
   .text-stroke-blue {
-    /* Đã thay đổi: Dùng hàm theme() để lấy màu xanh (#1e3a8a) động từ config */
-    -webkit-text-stroke: 1.5px theme('colors.blue.500');
+    /* Đã sửa: Dùng theme('colors.blue.DEFAULT') để lấy màu nâu #4A2C2A */
+    -webkit-text-stroke: 1.5px theme('colors.blue.DEFAULT');
   }
 
   .grain-overlay {
@@ -36,7 +34,7 @@
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
     mix-blend-mode: overlay;
-    z-index: 10; /* Bổ sung z-index để lớp hạt luôn hiển thị tốt */
+    z-index: 10;
   }
 }
 

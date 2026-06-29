@@ -16,9 +16,12 @@ export function SiteFooter() {
               className="object-contain object-left"
             />
           </div>
-          <p className="font-saigon3 text-lg tracking-widest text-mustard/90">
-            GIÒN TAN NHỊP<br />VANGGGGGG!
-          </p>
+          {/* Slogan dàn ngang với whitespace-nowrap */}
+          <div className="w-max">
+            <p className="font-saigon3 text-lg tracking-widest text-mustard/90 whitespace-nowrap">
+              GIÒN TAN NHỊP VANGG!
+            </p>
+          </div>
         </div>
 
         {/* CỘT 2: Danh bạ liên hệ (Giữa) */}

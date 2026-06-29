@@ -2,15 +2,16 @@
 
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image"; // Đảm bảo đã import Image
 
 const FAQS = [
   {
     q: "WALKING TACO là cái gì z?",
-    a: "Là taco đi bộ được, topping nhét thẳng vào túi snack, cầm tay đi tới đâu ăn tới đó. Tiện, gọn, vui!",
+    a: "Là taco đi bộ được, topping được nhét thẳng vào túi snack, cầm tay đi tới đâu ăn tới đó luôn.",
   },
   {
-    q: "Phí ship tính sao?",
-    a: "Đồng giá 15.000đ cho mọi đơn trong nội thành. Đơn trên 150k là free luôn nha.",
+    q: "Phí ship tính sao nhỉ?",
+    a: "Đồng giá 10.000đ cho mọi đơn trong nội thành. Đơn trên 150k là free luôn nha.",
   },
   {
     q: "Tụi mình giao khi nào?",
@@ -18,7 +19,7 @@ const FAQS = [
   },
   {
     q: "Có món nào cho HỆ YẾU ĐUỐI không?",
-    a: "Có chứ! Taco Milonga và Taco Lento siêu hiền, ngọt béo dễ thương. Còn Taco La Yumba thì… tự chịu trách nhiệm à.",
+    a: "Có chứ! Taco Milonga và Taco Lento siêu hiền, ngọt béo dễ thương. Còn Taco La Yumba thì… hơi cay nha.",
   },
 ];
 
@@ -32,14 +33,23 @@ export function FaqSection() {
     >
       <div className="mx-auto max-w-3xl">
         <div className="mb-10 flex flex-col gap-3">
-          {/* Giữ nguyên uppercase/tracking cũ vì đây là nhãn nhỏ */}
           <span className="font-saigon3 text-xs font-bold uppercase tracking-[0.3em] text-tomato">
             Hỏi đáp
           </span>
-          {/* Thêm tracking-wider cho tiêu đề lớn */}
-          <h2 className="font-saigon2 text-3xl tracking-wider text-blue sm:text-4xl">
-            Thắc mắc thường gặp
-          </h2>
+          
+          {/* PHẦN TIÊU ĐỀ CÓ MASCOT NHẢY */}
+          <div className="flex items-center gap-3">
+            <h2 className="font-saigon2 text-3xl tracking-wider text-blue sm:text-4xl">
+              Thắc mắc thường gặp
+            </h2>
+            <Image 
+              src="/images/faqmascot.png" 
+              alt="Mascot" 
+              width={100} 
+              height={100} 
+              className="hidden sm:block object-contain animate-bounce" 
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -54,7 +64,6 @@ export function FaqSection() {
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                   aria-expanded={isOpen}
-                  // Thêm tracking-wider cho câu hỏi
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-saigon3 text-base tracking-wider text-blue sm:text-lg"
                 >
                   {faq.q}
