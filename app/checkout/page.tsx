@@ -9,7 +9,7 @@ import { formatVND } from "@/lib/menu-data";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
-const DISTRICTS = ["Quận 1", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8", "Quận 10", "Quận 11", "Quận 12", "Bình Tân", "Bình Thạnh", "Gò Vấp", "Phú Nhuận", "Tân Bình", "Tân Phú", "Quận 2", "Quận 9", "Thủ Đức", "Bình Chánh", "Cần Giờ", "Củ Chi", "Hóc Môn", "Nhà Bè"];
+const DISTRICTS = ["Quận 1", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8", "Quận 10", "Quận 11", "Quận 12", "Bình Tân", "Bình Thạnh", "Gò Vấp", "Phú Nhuận", "Tân Bình", "Tân Phú", "Quận 2", "Quận 9", "Thủ Đức", "Nhà Bè"];
 const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
 
@@ -131,8 +131,10 @@ export default function CheckoutPage() {
           <textarea required placeholder="Địa chỉ chi tiết" onChange={e => setForm({...form, address: e.target.value})} className="p-3 rounded-lg border-2 border-blue" />
           <select required onChange={e => setDeliverySlot(e.target.value)} className="p-3 rounded-lg border-2 border-blue">
             <option value="">Chọn khung giờ ship</option>
-            <option value="15:00-16:00">Chiều: 3pm - 4pm</option>
-            <option value="18:00-19:00">Tối: 6pm - 7pm</option>
+            <option value="10:00-11:00">Thứ 5 (02/07) - Sáng: 10am - 11am</option>
+            <option value="15:00-15:30">Thứ 5 (02/07) - Chiều: 3pm - 3:30pm (Chỉ dành cho sinh viên ISB học Ca 3)</option>
+            <option value="15:00-16:00">Thứ 6 (03/07) - Chiều: 3pm - 4pm</option>
+            <option value="18:00-19:00">Thứ 6 (03/07) - Tối: 6pm - 7pm</option>
           </select>
           <select required onChange={e => {setPaymentMethod(e.target.value); setFileMessage("");}} className="p-3 rounded-lg border-2 border-blue">
             <option value="">Chọn phương thức thanh toán</option>
