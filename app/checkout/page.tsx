@@ -132,7 +132,7 @@ export default function CheckoutPage() {
           <select required onChange={e => setDeliverySlot(e.target.value)} className="p-3 rounded-lg border-2 border-blue">
             <option value="">Chọn khung giờ ship</option>
             <option value="10:00-11:00">Thứ 5 (02/07) - Sáng: 10am - 11am</option>
-            <option value="15:00-15:30">Thứ 5 (02/07) - Chiều: 3pm - 3:30pm (Chỉ dành cho sinh viên ISB học Ca 3)</option>
+            <option value="15:00-15:30">Thứ 5 (02/07) - Chiều: 3pm - 3:30pm (Chỉ dành cho sinh viên ISB đi học tại cơ sở B - Nguyễn Tri Phương)</option>
             <option value="15:00-16:00">Thứ 6 (03/07) - Chiều: 3pm - 4pm</option>
             <option value="18:00-19:00">Thứ 6 (03/07) - Tối: 6pm - 7pm</option>
           </select>
