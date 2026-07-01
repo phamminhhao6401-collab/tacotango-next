@@ -34,6 +34,10 @@ const FREE_SHIPPING_THRESHOLD = 150000;
 const UEH_FREE_SHIPPING_SLOT = "T5_0207_1500_1530_UEH";
 const THU_DUC_REQUIRED_SLOT = "T6_0307_1800_1900";
 
+const VALID_FREE_SHIPPING_CODES = ["BANBE", "NGUOITHAN"] as const;
+
+type FreeShippingCode = (typeof VALID_FREE_SHIPPING_CODES)[number];
+
 const DELIVERY_SLOTS = [
   {
     value: "T5_0207_1000_1100",
@@ -80,6 +84,10 @@ export default function CheckoutPage() {
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [fileMessage, setFileMessage] = useState("");
 
+  const [promoCode, setPromoCode] = useState("");
+  const [isPromoApplied, setIsPromoApplied] = useState(false);
+  const [promoMessage, setPromoMessage] = useState("");
+
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -93,15 +101,49 @@ export default function CheckoutPage() {
     (slot) => slot.value === deliverySlot
   );
 
+  const normalizedPromoCode = promoCode.trim().toUpperCase();
+
+  const isPromoCodeValid = VALID_FREE_SHIPPING_CODES.includes(
+    normalizedPromoCode as FreeShippingCode
+  );
+
   const isUEHFreeShippingSlot = deliverySlot === UEH_FREE_SHIPPING_SLOT;
+
   const isThuDucRequiredSlot =
     isThuDucDistrict && deliverySlot === THU_DUC_REQUIRED_SLOT;
 
+  const isPromoFreeShipping = isPromoApplied && isPromoCodeValid;
+
   const isFreeShipping =
-    isUEHFreeShippingSlot || subtotal >= FREE_SHIPPING_THRESHOLD;
+    isUEHFreeShippingSlot ||
+    subtotal >= FREE_SHIPPING_THRESHOLD ||
+    isPromoFreeShipping;
 
   const shippingFee = isFreeShipping ? 0 : SHIPPING_FEE;
   const total = subtotal + shippingFee;
+
+  const shippingDiscountReasons = [
+    isUEHFreeShippingSlot
+      ? "Miễn phí ship cho sinh viên UEH có mặt tại cơ sở B - Nguyễn Tri Phương vào T5 (02/07), 3:00 pm - 3:30 pm"
+      : "",
+    subtotal >= FREE_SHIPPING_THRESHOLD
+      ? `Miễn phí ship vì đơn hàng từ ${formatVND(FREE_SHIPPING_THRESHOLD)}`
+      : "",
+    isPromoFreeShipping
+      ? `Miễn phí ship bằng mã ${normalizedPromoCode}`
+      : "",
+  ].filter(Boolean);
+
+  const shippingFeeLabel =
+    shippingFee === 0
+      ? isUEHFreeShippingSlot
+        ? "Miễn phí - UEH cơ sở B"
+        : subtotal >= FREE_SHIPPING_THRESHOLD
+        ? "Miễn phí"
+        : isPromoFreeShipping
+        ? `Miễn phí - mã ${normalizedPromoCode}`
+        : "Miễn phí"
+      : formatVND(SHIPPING_FEE);
 
   const handleDistrictChange = (district: string) => {
     setForm((prev) => ({
@@ -111,6 +153,40 @@ export default function CheckoutPage() {
 
     if (district === "Thủ Đức") {
       setDeliverySlot(THU_DUC_REQUIRED_SLOT);
+    }
+  };
+
+  const handlePromoCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPromoCode(e.target.value);
+    setIsPromoApplied(false);
+    setPromoMessage("");
+  };
+
+  const handleApplyPromoCode = () => {
+    if (!normalizedPromoCode) {
+      setIsPromoApplied(false);
+      setPromoMessage("Vui lòng nhập mã freeship.");
+      return;
+    }
+
+    if (!isPromoCodeValid) {
+      setIsPromoApplied(false);
+      setPromoMessage("Mã freeship không hợp lệ.");
+      return;
+    }
+
+    setPromoCode(normalizedPromoCode);
+    setIsPromoApplied(true);
+
+    if (
+      isUEHFreeShippingSlot ||
+      subtotal >= FREE_SHIPPING_THRESHOLD
+    ) {
+      setPromoMessage(
+        `Mã ${normalizedPromoCode} hợp lệ. Đơn này hiện đã được freeship.`
+      );
+    } else {
+      setPromoMessage(`Áp dụng mã ${normalizedPromoCode} thành công.`);
     }
   };
 
@@ -157,13 +233,15 @@ export default function CheckoutPage() {
 
     data.append("isUEHFreeShippingSlot", isUEHFreeShippingSlot ? "Có" : "Không");
     data.append("isThuDucRequiredSlot", isThuDucRequiredSlot ? "Có" : "Không");
+    data.append("isPromoFreeShipping", isPromoFreeShipping ? "Có" : "Không");
+    data.append("promoCode", isPromoFreeShipping ? normalizedPromoCode : "");
 
-    if (isUEHFreeShippingSlot) {
-      data.append(
-        "shippingDiscountReason",
-        "Miễn phí ship cho sinh viên UEH có mặt tại cơ sở B - Nguyễn Tri Phương vào T5 (02/07), 3:00 pm - 3:30 pm"
-      );
-    }
+    data.append(
+      "shippingDiscountReason",
+      shippingDiscountReasons.length > 0
+        ? shippingDiscountReasons.join(" | ")
+        : "Không có"
+    );
 
     if (isThuDucRequiredSlot) {
       data.append(
@@ -303,19 +381,19 @@ export default function CheckoutPage() {
               <div className="p-5 bg-blue text-mustard rounded-2xl">
                 <p>Tạm tính: {formatVND(subtotal)}</p>
 
-                <p>
-                  Phí ship:{" "}
-                  {shippingFee === 0
-                    ? isUEHFreeShippingSlot
-                      ? "Miễn phí - UEH cơ sở B"
-                      : "Miễn phí"
-                    : formatVND(SHIPPING_FEE)}
-                </p>
+                <p>Phí ship: {shippingFeeLabel}</p>
 
                 {isUEHFreeShippingSlot && (
                   <p className="text-xs mt-1 text-cream/90">
                     Bạn đã chọn khung giờ dành cho sinh viên UEH tại cơ sở B -
                     Nguyễn Tri Phương. Phí ship đã được tự động miễn.
+                  </p>
+                )}
+
+                {isPromoFreeShipping && !isUEHFreeShippingSlot && subtotal < FREE_SHIPPING_THRESHOLD && (
+                  <p className="text-xs mt-1 text-cream/90">
+                    Bạn đã áp dụng mã {normalizedPromoCode}. Phí ship đã được
+                    tự động miễn.
                   </p>
                 )}
 
@@ -438,6 +516,45 @@ export default function CheckoutPage() {
               </p>
             </div>
           )}
+
+          <div className="p-4 border-2 border-blue rounded-xl bg-cream space-y-2">
+            <p className="font-bold text-blue text-sm uppercase">
+              Mã freeship
+            </p>
+
+            <div className="flex gap-2">
+              <input
+                placeholder="Nhập mã freeship nếu có"
+                value={promoCode}
+                onChange={handlePromoCodeChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleApplyPromoCode();
+                  }
+                }}
+                className="p-3 rounded-lg border-2 border-blue flex-grow"
+              />
+
+              <button
+                type="button"
+                onClick={handleApplyPromoCode}
+                className="bg-blue text-mustard px-4 rounded-lg font-bold hover:bg-blue/90 transition-colors"
+              >
+                Áp dụng
+              </button>
+            </div>
+
+            {promoMessage && (
+              <p
+                className={`text-xs font-bold ${
+                  isPromoFreeShipping ? "text-green-700" : "text-tomato"
+                }`}
+              >
+                {promoMessage}
+              </p>
+            )}
+          </div>
 
           <select
             required

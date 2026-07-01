@@ -24,12 +24,23 @@ interface EmailTemplateProps {
   deliverySlot: string;
   paymentMethod: string;
 
-  // Các field mới, để tương thích với logic checkout/route mới
+  // Field cũ cho logic UEH / Thủ Đức
   isUEHFreeShippingSlot?: string;
   isThuDucRequiredSlot?: string;
   shippingDiscountReason?: string;
   deliveryRestrictionNote?: string;
+
+  // Field mới cho mã freeship
+  promoCode?: string;
+  isPromoApplied?: string;
+  promoDiscountReason?: string;
 }
+
+const FREE_SHIPPING_THRESHOLD = 150000;
+
+const formatVND = (value: number) => {
+  return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+};
 
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   name,
@@ -44,34 +55,96 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   total,
   deliverySlot,
   paymentMethod,
+
   isUEHFreeShippingSlot = "Không",
   isThuDucRequiredSlot = "Không",
   shippingDiscountReason = "",
   deliveryRestrictionNote = "",
+
+  promoCode = "",
+  isPromoApplied = "Không",
+  promoDiscountReason = "",
 }) => {
   const paymentMethodLabel =
     paymentMethod === "Bank" ? "Chuyển khoản ngân hàng" : "COD";
 
+  const normalizedNote = note || "";
+  const normalizedPromoCode = promoCode.trim().toUpperCase();
+
+  const rawNoteLines =
+    normalizedNote && normalizedNote !== "Không có ghi chú"
+      ? normalizedNote
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean)
+      : [];
+
+  const hasPromoFromNote = rawNoteLines.some(
+    (line) =>
+      line.includes("Ưu đãi mã freeship") ||
+      line.includes("Miễn phí ship bằng mã")
+  );
+
+  const hasUEHFromNote = rawNoteLines.some(
+    (line) =>
+      line.includes("UEH") ||
+      line.includes("cơ sở B") ||
+      line.includes("Nguyễn Tri Phương")
+  );
+
+  const hasThuDucFromNote = rawNoteLines.some(
+    (line) =>
+      line.includes("Thủ Đức") ||
+      line.includes("T6 (03/07), 6:00 pm - 7:00 pm")
+  );
+
   const isUEHSlot =
     isUEHFreeShippingSlot === "Có" ||
+    deliverySlot.includes("UEH") ||
     deliverySlot.includes("3:00 pm - 3:30 pm") ||
-    note?.includes("Ưu đãi ship");
+    hasUEHFromNote;
 
   const isThuDucSlot =
     isThuDucRequiredSlot === "Có" ||
-    (district === "Thủ Đức" && deliverySlot.includes("6:00 pm - 7:00 pm"));
+    (district === "Thủ Đức" && deliverySlot.includes("6:00 pm - 7:00 pm")) ||
+    hasThuDucFromNote;
 
-  const noteLines =
-    note && note !== "Không có ghi chú"
-      ? note.split("\n").filter((line) => line.trim() !== "")
-      : [];
+  const isPromoFreeShipping =
+    shippingFee === 0 &&
+    (isPromoApplied === "Có" || Boolean(normalizedPromoCode) || hasPromoFromNote);
+
+  const isSubtotalFreeShipping =
+    shippingFee === 0 && subtotal >= FREE_SHIPPING_THRESHOLD;
+
+  const customerNoteLines = rawNoteLines.filter((line) => {
+    const isSystemNote =
+      line.startsWith("Ưu đãi ship:") ||
+      line.startsWith("Ưu đãi mã freeship:") ||
+      line.startsWith("Ghi chú giao hàng:");
+
+    return !isSystemNote;
+  });
 
   const shippingFeeText =
     shippingFee === 0
       ? isUEHSlot
         ? "Miễn phí - UEH cơ sở B"
-        : "Miễn phí"
-      : `${shippingFee.toLocaleString("vi-VN")}đ`;
+        : isPromoFreeShipping
+          ? normalizedPromoCode
+            ? `Miễn phí - mã ${normalizedPromoCode}`
+            : "Miễn phí - mã freeship"
+          : isSubtotalFreeShipping
+            ? "Miễn phí - đơn từ 150.000đ"
+            : "Miễn phí"
+      : formatVND(shippingFee);
+
+  const promoText =
+    promoDiscountReason ||
+    (normalizedPromoCode
+      ? `Miễn phí ship bằng mã ${normalizedPromoCode}`
+      : hasPromoFromNote
+        ? "Đơn hàng đã áp dụng mã freeship"
+        : "");
 
   return (
     <Html>
@@ -129,11 +202,17 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
               </Text>
             )}
 
+            {isPromoFreeShipping && promoText && (
+              <Text style={{ margin: "5px 0", color: "#15803d" }}>
+                <strong>Mã freeship:</strong> {promoText}
+              </Text>
+            )}
+
             <Text style={{ margin: "5px 0" }}>
               <strong>Phương thức thanh toán:</strong> {paymentMethodLabel}
             </Text>
 
-            {noteLines.length > 0 && (
+            {customerNoteLines.length > 0 && (
               <Section
                 style={{
                   marginTop: "10px",
@@ -149,10 +228,10 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                     fontWeight: "bold",
                   }}
                 >
-                  Ghi chú đơn hàng:
+                  Ghi chú của khách:
                 </Text>
 
-                {noteLines.map((line, index) => (
+                {customerNoteLines.map((line, index) => (
                   <Text
                     key={index}
                     style={{
@@ -180,6 +259,18 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                 {item.name} x {item.quantity}
               </Text>
 
+              {typeof item.price === "number" && (
+                <Text
+                  style={{
+                    margin: "2px 0",
+                    fontSize: "13px",
+                    color: "#333",
+                  }}
+                >
+                  Giá món: {formatVND(item.price)}
+                </Text>
+              )}
+
               {(item.selectedIngredients || []).map((ing: any) => (
                 <Text
                   key={ing.id}
@@ -191,7 +282,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                 >
                   + {ing.name}
                   {typeof ing.price === "number"
-                    ? ` (${ing.price.toLocaleString("vi-VN")}đ)`
+                    ? ` (${formatVND(ing.price)})`
                     : ""}
                 </Text>
               ))}
@@ -202,7 +293,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
 
           <Section>
             <Text style={{ margin: "5px 0" }}>
-              <strong>Tạm tính:</strong> {subtotal.toLocaleString("vi-VN")}đ
+              <strong>Tạm tính:</strong> {formatVND(subtotal)}
             </Text>
 
             <Text style={{ margin: "5px 0" }}>
@@ -215,20 +306,35 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
               </Text>
             )}
 
-            {shippingDiscountReason && (
+            {shippingFee === 0 && isPromoFreeShipping && promoText && (
+              <Text style={{ margin: "5px 0", color: "#15803d" }}>
+                {promoText}
+              </Text>
+            )}
+
+            {shippingFee === 0 &&
+              isSubtotalFreeShipping &&
+              !isUEHSlot &&
+              !isPromoFreeShipping && (
+                <Text style={{ margin: "5px 0", color: "#15803d" }}>
+                  Đơn hàng từ 150.000đ nên được miễn phí ship.
+                </Text>
+              )}
+
+            {shippingDiscountReason && !isUEHSlot && (
               <Text style={{ margin: "5px 0", color: "#15803d" }}>
                 {shippingDiscountReason}
               </Text>
             )}
 
-            {deliveryRestrictionNote && (
+            {deliveryRestrictionNote && !isThuDucSlot && (
               <Text style={{ margin: "5px 0", color: "#ff6347" }}>
                 {deliveryRestrictionNote}
               </Text>
             )}
 
             <Heading as="h2" style={{ color: "#4a2c2a" }}>
-              Tổng thanh toán: {total.toLocaleString("vi-VN")}đ
+              Tổng thanh toán: {formatVND(total)}
             </Heading>
           </Section>
 

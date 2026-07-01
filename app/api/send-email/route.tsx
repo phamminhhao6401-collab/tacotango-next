@@ -2,20 +2,33 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { EmailTemplate } from "@/components/email-template";
 
+export const runtime = "nodejs";
+
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const SHIPPING_FEE = 10000;
+const FREE_SHIPPING_THRESHOLD = 150000;
+
+const VALID_PROMO_CODES = ["BANBE", "NGUOITHAN"];
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
 
-    const name = String(formData.get("name") || "");
-    const email = String(formData.get("email") || "");
-    const phone = String(formData.get("phone") || "");
-    const district = String(formData.get("district") || "");
-    const address = String(formData.get("address") || "");
-    const note = String(formData.get("note") || "");
-    const deliverySlot = String(formData.get("deliverySlot") || "");
-    const paymentMethod = String(formData.get("paymentMethod") || "");
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const phone = String(formData.get("phone") || "").trim();
+    const district = String(formData.get("district") || "").trim();
+    const address = String(formData.get("address") || "").trim();
+    const note = String(formData.get("note") || "").trim();
+    const deliverySlot = String(formData.get("deliverySlot") || "").trim();
+    const paymentMethod = String(formData.get("paymentMethod") || "").trim();
+
+    const promoCode = String(formData.get("promoCode") || "")
+      .trim()
+      .toUpperCase();
+
+    const isPromoValid = VALID_PROMO_CODES.includes(promoCode);
 
     const isUEHFreeShippingSlot = String(
       formData.get("isUEHFreeShippingSlot") || "Không"
@@ -34,12 +47,10 @@ export async function POST(request: Request) {
     );
 
     const subtotal = Number(formData.get("subtotal") || 0);
-    const shippingFee = Number(formData.get("shippingFee") || 0);
-    const total = Number(formData.get("total") || 0);
 
     const rawItems = String(formData.get("items") || "[]");
 
-    let items = [];
+    let items: any[] = [];
 
     try {
       items = JSON.parse(rawItems);
@@ -50,7 +61,15 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!name || !email || !phone || !district || !address || !deliverySlot) {
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !district ||
+      !address ||
+      !deliverySlot ||
+      !paymentMethod
+    ) {
       return NextResponse.json(
         { error: "Thiếu thông tin đặt hàng bắt buộc" },
         { status: 400 }
@@ -97,10 +116,31 @@ export async function POST(request: Request) {
       });
     }
 
+    const isSubtotalFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+    const isUEHFreeShipping = isUEHFreeShippingSlot === "Có";
+
+    const isFreeShipping =
+      isSubtotalFreeShipping || isUEHFreeShipping || isPromoValid;
+
+    const shippingFee = isFreeShipping ? 0 : SHIPPING_FEE;
+    const total = subtotal + shippingFee;
+
+    let promoDiscountReason = "";
+
+    if (isPromoValid) {
+      promoDiscountReason = `Miễn phí ship bằng mã ${promoCode}`;
+    }
+
     const extraNotes = [
       note,
-      isUEHFreeShippingSlot === "Có" && shippingDiscountReason
+      isUEHFreeShipping && shippingDiscountReason
         ? `Ưu đãi ship: ${shippingDiscountReason}`
+        : "",
+      isPromoValid && promoDiscountReason
+        ? `Ưu đãi mã freeship: ${promoDiscountReason}`
+        : "",
+      isSubtotalFreeShipping
+        ? `Ưu đãi ship: Đơn hàng từ 150.000đ nên được miễn phí ship`
         : "",
       isThuDucRequiredSlot === "Có" && deliveryRestrictionNote
         ? `Ghi chú giao hàng: ${deliveryRestrictionNote}`
