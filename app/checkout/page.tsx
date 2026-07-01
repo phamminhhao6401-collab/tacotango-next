@@ -3,7 +3,16 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Minus, Plus, CheckCircle2, Trash2, X, Upload } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  CheckCircle2,
+  Trash2,
+  X,
+  Upload,
+  Instagram,
+  Facebook,
+} from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { formatVND } from "@/lib/menu-data";
 import { SiteHeader } from "@/components/site-header";
@@ -37,6 +46,9 @@ const THU_DUC_REQUIRED_SLOT = "T6_0307_1800_1900";
 const VALID_FREE_SHIPPING_CODES = ["BANBE", "NGUOITHAN"] as const;
 
 type FreeShippingCode = (typeof VALID_FREE_SHIPPING_CODES)[number];
+
+// Đổi thành false khi Taco Tango muốn mở đơn lại
+const ORDERS_PAUSED = true;
 
 const DELIVERY_SLOTS = [
   {
@@ -178,10 +190,7 @@ export default function CheckoutPage() {
     setPromoCode(normalizedPromoCode);
     setIsPromoApplied(true);
 
-    if (
-      isUEHFreeShippingSlot ||
-      subtotal >= FREE_SHIPPING_THRESHOLD
-    ) {
+    if (isUEHFreeShippingSlot || subtotal >= FREE_SHIPPING_THRESHOLD) {
       setPromoMessage(
         `Mã ${normalizedPromoCode} hợp lệ. Đơn này hiện đã được freeship.`
       );
@@ -276,6 +285,78 @@ export default function CheckoutPage() {
       alert("Lỗi kết nối!");
       setIsSubmitting(false);
     }
+  }
+
+  if (ORDERS_PAUSED) {
+    return (
+      <div className="min-h-screen bg-mustard">
+        <SiteHeader />
+
+        <main className="mx-auto max-w-3xl px-4 py-20">
+          <section className="bg-cream border-3 border-blue rounded-3xl p-8 md:p-12 text-center shadow-[8px_8px_0px_#1f3c88]">
+            <p className="text-tomato font-bold uppercase tracking-widest text-sm mb-4">
+              Taco Tango tạm đóng đơn
+            </p>
+
+            <h1 className="text-3xl md:text-5xl text-blue font-saigon2 mb-6 leading-tight">
+              Chúng mình đã nhận đủ đơn cho đợt này rồi!
+            </h1>
+
+            <p className="text-blue text-base md:text-lg leading-relaxed mb-6 font-medium">
+              Chúng mình đã nhận đủ số lượng đơn cho đợt này để đảm bảo chất
+              lượng ngon nhất. Xin lỗi bạn vì sự bất tiện này nhé!
+            </p>
+
+            <div className="bg-mustard border-2 border-blue rounded-2xl p-5 mb-6">
+              <p className="text-blue font-bold text-lg">
+                Taco Tango sẽ trở lại vào tối Thứ 6 (03/07)
+              </p>
+            </div>
+
+            <p className="text-tomato font-bold mb-3">
+              Nếu bạn đã đặt đơn thành công trước đó, đơn hàng vẫn sẽ được giao
+              đúng hẹn.
+            </p>
+
+            <p className="text-blue text-sm md:text-base mb-6">
+              Theo dõi Instagram/Fanpage để nhận thông báo sớm nhất khi chúng
+              mình mở đơn lại.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href="https://www.instagram.com/tacotango_2026"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-blue text-mustard px-6 py-3 rounded-full font-bold hover:bg-tomato hover:text-white transition-all w-full sm:w-auto"
+              >
+                <Instagram className="h-5 w-5" />
+                Instagram
+              </a>
+
+              <a
+                href="https://www.facebook.com/profile.php?id=61590932327366"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-blue text-mustard px-6 py-3 rounded-full font-bold hover:bg-tomato hover:text-white transition-all w-full sm:w-auto"
+              >
+                <Facebook className="h-5 w-5" />
+                Fanpage
+              </a>
+            </div>
+
+            <Link
+              href="/"
+              className="inline-block mt-8 text-blue font-bold underline underline-offset-4 hover:text-tomato transition-colors"
+            >
+              Quay lại trang chủ
+            </Link>
+          </section>
+        </main>
+
+        <SiteFooter />
+      </div>
+    );
   }
 
   if (!isMounted) {
@@ -390,12 +471,14 @@ export default function CheckoutPage() {
                   </p>
                 )}
 
-                {isPromoFreeShipping && !isUEHFreeShippingSlot && subtotal < FREE_SHIPPING_THRESHOLD && (
-                  <p className="text-xs mt-1 text-cream/90">
-                    Bạn đã áp dụng mã {normalizedPromoCode}. Phí ship đã được
-                    tự động miễn.
-                  </p>
-                )}
+                {isPromoFreeShipping &&
+                  !isUEHFreeShippingSlot &&
+                  subtotal < FREE_SHIPPING_THRESHOLD && (
+                    <p className="text-xs mt-1 text-cream/90">
+                      Bạn đã áp dụng mã {normalizedPromoCode}. Phí ship đã được
+                      tự động miễn.
+                    </p>
+                  )}
 
                 {isThuDucRequiredSlot && (
                   <p className="text-xs mt-1 text-cream/90">
