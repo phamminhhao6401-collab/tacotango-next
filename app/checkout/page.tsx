@@ -23,13 +23,10 @@ const DISTRICTS = [
   "Quận 3",
   "Quận 4",
   "Quận 5",
-  "Quận 6",
   "Quận 7",
   "Quận 8",
   "Quận 10",
-  "Quận 11",
   "Bình Thạnh",
-  "Gò Vấp",
   "Phú Nhuận",
   "Tân Bình",
   "Quận 9",
@@ -40,33 +37,42 @@ const DISTRICTS = [
 const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
 
-const UEH_FREE_SHIPPING_SLOT = "T5_0207_1500_1530_UEH";
-const THU_DUC_REQUIRED_SLOT = "T6_0307_1800_1900";
+const THU_DUC_REQUIRED_SLOT_VALUES = [
+  "T5_0907_1800_1900",
+  "T6_1007_1800_1900",
+];
 
 const VALID_FREE_SHIPPING_CODES = ["BANBE", "NGUOITHAN"] as const;
 
 type FreeShippingCode = (typeof VALID_FREE_SHIPPING_CODES)[number];
 
-// Đổi thành false khi Taco Tango muốn mở đơn lại
-const ORDERS_PAUSED = false
+// Đổi thành true khi Taco Tango muốn tạm đóng đơn
+const ORDERS_PAUSED = false;
 
 const DELIVERY_SLOTS = [
   {
-    value: "T5_0207_1000_1100",
-    label: "T5 (02/07): 10:00 am - 11:00 am",
+    value: "T5_0907_1000_1100",
+    label: "T5 (09/07): 10:00 am - 11:00 am",
   },
   {
-    value: UEH_FREE_SHIPPING_SLOT,
-    label:
-      "T5 (02/07): 3:00 pm - 3:30 pm - Chỉ dành cho sinh viên UEH tại cơ sở B Nguyễn Tri Phương",
+    value: "T5_0907_1500_1530",
+    label: "T5 (09/07): 3:00 pm - 3:30 pm",
   },
   {
-    value: "T6_0307_1500_1600",
-    label: "T6 (03/07): 3:00 pm - 4:00 pm",
+    value: "T5_0907_1800_1900",
+    label: "T5 (09/07): 6:00 pm - 7:00 pm",
   },
   {
-    value: THU_DUC_REQUIRED_SLOT,
-    label: "T6 (03/07): 6:00 pm - 7:00 pm",
+    value: "T6_1007_1000_1100",
+    label: "T6 (10/07): 10:00 am - 11:00 am",
+  },
+  {
+    value: "T6_1007_1500_1530",
+    label: "T6 (10/07): 3:00 pm - 3:30 pm",
+  },
+  {
+    value: "T6_1007_1800_1900",
+    label: "T6 (10/07): 6:00 pm - 7:00 pm",
   },
 ];
 
@@ -106,7 +112,9 @@ export default function CheckoutPage() {
   const isThuDucDistrict = form.district === "Thủ Đức";
 
   const availableDeliverySlots = isThuDucDistrict
-    ? DELIVERY_SLOTS.filter((slot) => slot.value === THU_DUC_REQUIRED_SLOT)
+    ? DELIVERY_SLOTS.filter((slot) =>
+        THU_DUC_REQUIRED_SLOT_VALUES.includes(slot.value)
+      )
     : DELIVERY_SLOTS;
 
   const selectedDeliverySlot = DELIVERY_SLOTS.find(
@@ -119,25 +127,18 @@ export default function CheckoutPage() {
     normalizedPromoCode as FreeShippingCode
   );
 
-  const isUEHFreeShippingSlot = deliverySlot === UEH_FREE_SHIPPING_SLOT;
-
   const isThuDucRequiredSlot =
-    isThuDucDistrict && deliverySlot === THU_DUC_REQUIRED_SLOT;
+    isThuDucDistrict && THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot);
 
   const isPromoFreeShipping = isPromoApplied && isPromoCodeValid;
 
   const isFreeShipping =
-    isUEHFreeShippingSlot ||
-    subtotal >= FREE_SHIPPING_THRESHOLD ||
-    isPromoFreeShipping;
+    subtotal >= FREE_SHIPPING_THRESHOLD || isPromoFreeShipping;
 
   const shippingFee = isFreeShipping ? 0 : SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
   const shippingDiscountReasons = [
-    isUEHFreeShippingSlot
-      ? "Miễn phí ship cho sinh viên UEH có mặt tại cơ sở B - Nguyễn Tri Phương vào T5 (02/07), 3:00 pm - 3:30 pm"
-      : "",
     subtotal >= FREE_SHIPPING_THRESHOLD
       ? `Miễn phí ship vì đơn hàng từ ${formatVND(FREE_SHIPPING_THRESHOLD)}`
       : "",
@@ -148,11 +149,7 @@ export default function CheckoutPage() {
 
   const shippingFeeLabel =
     shippingFee === 0
-      ? isUEHFreeShippingSlot
-        ? "Miễn phí - UEH cơ sở B"
-        : subtotal >= FREE_SHIPPING_THRESHOLD
-        ? "Miễn phí"
-        : isPromoFreeShipping
+      ? isPromoFreeShipping
         ? `Miễn phí - mã ${normalizedPromoCode}`
         : "Miễn phí"
       : formatVND(SHIPPING_FEE);
@@ -163,8 +160,11 @@ export default function CheckoutPage() {
       district,
     }));
 
-    if (district === "Thủ Đức") {
-      setDeliverySlot(THU_DUC_REQUIRED_SLOT);
+    if (
+      district === "Thủ Đức" &&
+      !THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot)
+    ) {
+      setDeliverySlot("");
     }
   };
 
@@ -189,14 +189,7 @@ export default function CheckoutPage() {
 
     setPromoCode(normalizedPromoCode);
     setIsPromoApplied(true);
-
-    if (isUEHFreeShippingSlot || subtotal >= FREE_SHIPPING_THRESHOLD) {
-      setPromoMessage(
-        `Mã ${normalizedPromoCode} hợp lệ. Đơn này hiện đã được freeship.`
-      );
-    } else {
-      setPromoMessage(`Áp dụng mã ${normalizedPromoCode} thành công.`);
-    }
+    setPromoMessage(`Áp dụng mã ${normalizedPromoCode} thành công.`);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -214,9 +207,12 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (form.district === "Thủ Đức" && deliverySlot !== THU_DUC_REQUIRED_SLOT) {
+    if (
+      form.district === "Thủ Đức" &&
+      !THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot)
+    ) {
       alert(
-        "Khách ở Thủ Đức chỉ có thể nhận hàng vào T6 (03/07): 6:00 pm - 7:00 pm."
+        "Khách ở Thủ Đức chỉ có thể nhận hàng vào khung 6:00 pm - 7:00 pm mỗi ngày."
       );
       return;
     }
@@ -240,7 +236,6 @@ export default function CheckoutPage() {
     data.append("deliverySlot", selectedDeliverySlot?.label || deliverySlot);
     data.append("paymentMethod", paymentMethod);
 
-    data.append("isUEHFreeShippingSlot", isUEHFreeShippingSlot ? "Có" : "Không");
     data.append("isThuDucRequiredSlot", isThuDucRequiredSlot ? "Có" : "Không");
     data.append("isPromoFreeShipping", isPromoFreeShipping ? "Có" : "Không");
     data.append("promoCode", isPromoFreeShipping ? normalizedPromoCode : "");
@@ -255,7 +250,7 @@ export default function CheckoutPage() {
     if (isThuDucRequiredSlot) {
       data.append(
         "deliveryRestrictionNote",
-        "Khách ở Thủ Đức chỉ nhận hàng vào T6 (03/07), 6:00 pm - 7:00 pm"
+        "Khách ở Thủ Đức chỉ nhận hàng vào khung 6:00 pm - 7:00 pm mỗi ngày"
       );
     }
 
@@ -309,7 +304,7 @@ export default function CheckoutPage() {
 
             <div className="bg-mustard border-2 border-blue rounded-2xl p-5 mb-6">
               <p className="text-blue font-bold text-lg">
-                Taco Tango sẽ trở lại vào tối Thứ 6 (03/07)
+                Taco Tango sẽ trở lại vào Thứ 5 (09/07)
               </p>
             </div>
 
@@ -464,26 +459,24 @@ export default function CheckoutPage() {
 
                 <p>Phí ship: {shippingFeeLabel}</p>
 
-                {isUEHFreeShippingSlot && (
+                {subtotal >= FREE_SHIPPING_THRESHOLD && (
                   <p className="text-xs mt-1 text-cream/90">
-                    Bạn đã chọn khung giờ dành cho sinh viên UEH tại cơ sở B -
-                    Nguyễn Tri Phương. Phí ship đã được tự động miễn.
+                    Đơn hàng từ {formatVND(FREE_SHIPPING_THRESHOLD)} được miễn
+                    phí ship.
                   </p>
                 )}
 
-                {isPromoFreeShipping &&
-                  !isUEHFreeShippingSlot &&
-                  subtotal < FREE_SHIPPING_THRESHOLD && (
-                    <p className="text-xs mt-1 text-cream/90">
-                      Bạn đã áp dụng mã {normalizedPromoCode}. Phí ship đã được
-                      tự động miễn.
-                    </p>
-                  )}
+                {isPromoFreeShipping && subtotal < FREE_SHIPPING_THRESHOLD && (
+                  <p className="text-xs mt-1 text-cream/90">
+                    Bạn đã áp dụng mã {normalizedPromoCode}. Phí ship đã được tự
+                    động miễn.
+                  </p>
+                )}
 
                 {isThuDucRequiredSlot && (
                   <p className="text-xs mt-1 text-cream/90">
-                    Bạn đang chọn khu vực Thủ Đức. Khung nhận hàng áp dụng là T6
-                    (03/07): 6:00 pm - 7:00 pm.
+                    Bạn đang chọn khu vực Thủ Đức. Khung nhận hàng áp dụng là
+                    6:00 pm - 7:00 pm.
                   </p>
                 )}
 
@@ -581,21 +574,9 @@ export default function CheckoutPage() {
                 Khung giờ dành cho khu vực Thủ Đức
               </p>
               <p className="text-xs mt-1 leading-relaxed">
-                Khách ở Thủ Đức chỉ nhận hàng vào T6 (03/07): 6:00 pm - 7:00
-                pm. Hệ thống đã tự động chọn khung giờ này cho bạn.
-              </p>
-            </div>
-          )}
-
-          {isUEHFreeShippingSlot && (
-            <div className="p-4 rounded-xl border-2 border-blue bg-cream text-blue">
-              <p className="font-bold text-sm">
-                Miễn phí ship cho sinh viên UEH
-              </p>
-              <p className="text-xs mt-1 leading-relaxed">
-                Khung giờ này chỉ dành cho sinh viên UEH có mặt tại cơ sở B -
-                Nguyễn Tri Phương vào T5 (02/07), 3:00 pm - 3:30 pm. Phí ship
-                đã được tự động trừ khỏi đơn hàng.
+                Khách ở Thủ Đức chỉ nhận hàng vào khung 6:00 pm - 7:00 pm mỗi
+                ngày. Vui lòng chọn T5 hoặc T6 trong các khung giờ đang hiển
+                thị.
               </p>
             </div>
           )}
