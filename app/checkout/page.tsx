@@ -131,15 +131,15 @@ export default function CheckoutPage() {
     isThuDucDistrict && THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot);
 
   const isPromoFreeShipping = isPromoApplied && isPromoCodeValid;
+  const isOrderValueFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
 
-  const isFreeShipping =
-    subtotal >= FREE_SHIPPING_THRESHOLD || isPromoFreeShipping;
+  const isFreeShipping = isOrderValueFreeShipping || isPromoFreeShipping;
 
   const shippingFee = isFreeShipping ? 0 : SHIPPING_FEE;
   const total = subtotal + shippingFee;
 
   const shippingDiscountReasons = [
-    subtotal >= FREE_SHIPPING_THRESHOLD
+    isOrderValueFreeShipping
       ? `Miễn phí ship vì đơn hàng từ ${formatVND(FREE_SHIPPING_THRESHOLD)}`
       : "",
     isPromoFreeShipping
@@ -459,14 +459,14 @@ export default function CheckoutPage() {
 
                 <p>Phí ship: {shippingFeeLabel}</p>
 
-                {subtotal >= FREE_SHIPPING_THRESHOLD && (
+                {isOrderValueFreeShipping && (
                   <p className="text-xs mt-1 text-cream/90">
                     Đơn hàng từ {formatVND(FREE_SHIPPING_THRESHOLD)} được miễn
                     phí ship.
                   </p>
                 )}
 
-                {isPromoFreeShipping && subtotal < FREE_SHIPPING_THRESHOLD && (
+                {isPromoFreeShipping && !isOrderValueFreeShipping && (
                   <p className="text-xs mt-1 text-cream/90">
                     Bạn đã áp dụng mã {normalizedPromoCode}. Phí ship đã được tự
                     động miễn.
