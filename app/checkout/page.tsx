@@ -642,7 +642,7 @@ export default function CheckoutPage() {
 
               <div className="relative w-40 h-40 mx-auto border-2 border-blue rounded-lg overflow-hidden">
                 <Image
-                  src="/images/qr.jpg"
+                  src="/images/qrmomo.jpg"
                   alt="QR"
                   fill
                   className="object-cover"
@@ -651,13 +651,13 @@ export default function CheckoutPage() {
 
               <div className="text-sm text-blue space-y-1">
                 <p>
-                  <span className="font-bold">Chủ TK:</span> Huỳnh Phương Nghi
+                  <span className="font-bold">Chủ TK:</span> NGUYEN LE DUC NHAN
                 </p>
                 <p>
-                  <span className="font-bold">Ngân hàng:</span> MB Bank
+                  <span className="font-bold">Ngân hàng:</span> MoMo
                 </p>
                 <p>
-                  <span className="font-bold">Số TK:</span> 9704229200644961996
+                  <span className="font-bold">Số TK:</span> PSG2618315400000015
                 </p>
               </div>
 
