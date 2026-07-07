@@ -18,9 +18,7 @@ export type TacoItem = {
 };
 
 export const AVAILABLE_INGREDIENTS: Ingredient[] = [
-  { id: "spicy", name: "Thêm sốt cay", price: 5000 },
   { id: "sour_cream", name: "Thêm kem chua", price: 5000},
-  { id: "bbq_sauce", name: "Thêm sốt BBQ", price: 5000},
   { id: "extra_meat", name: "Gấp đôi thịt", price: 15000 },
 ];
 
