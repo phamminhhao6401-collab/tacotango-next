@@ -34,7 +34,7 @@ export const MENU: TacoItem[] = [
     tag: "Ngọt ngào, giòn rụm",
     image: "/images/milonga.png",
     details: {
-      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, phô mai mozzarella, cà chua, ớt chuông",
+      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, cà chua, ớt chuông",
       sauce: "Mayonnaise và Sour cream (Kem chua)."
     },
     ingredients: AVAILABLE_INGREDIENTS,
@@ -48,7 +48,7 @@ export const MENU: TacoItem[] = [
     tag: "Chua chua thanh thanh",
     image: "/images/vals.jpg",
     details: {
-      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, cà chua tươi, phô mai mozzarella, ớt chuông",
+      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, cà chua tươi, ớt chuông",
       sauce: "Extra Sour cream, Mayonnaise, tương ớt."
     },
     ingredients: AVAILABLE_INGREDIENTS,
@@ -62,7 +62,7 @@ export const MENU: TacoItem[] = [
     tag: "Đậm đà vị BBQ",
     image: "/images/nuevo.jpg",
     details: {
-      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, bắp ngô ngọt, phô mai mozzarella, cà chua tươi",
+      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, bắp ngô ngọt, cà chua tươi",
       sauce: "Sốt BBQ, Sour cream."
     },
     ingredients: AVAILABLE_INGREDIENTS,
@@ -70,13 +70,13 @@ export const MENU: TacoItem[] = [
   {
     id: "lento",
     name: "Taco Lento",
-    description: "Extra Cheese & Bắp Ngọt (Chill)",
+    description: "Extra Bắp Ngọt (Chill)",
     price: 39000,
-    emoji: "🧀",
-    tag: "Ngập ngụa phô mai",
+    emoji: "🌽",
+    tag: "Ngọt ngào, béo ngậy",
     image: "/images/lento.jpg",
     details: {
-      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, phô mai mozzarella, bắp ngô ngọt, cà chua",
+      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, bắp ngô ngọt, cà chua",
       sauce: "Sour cream béo."
     },
     ingredients: AVAILABLE_INGREDIENTS,
@@ -90,7 +90,7 @@ export const MENU: TacoItem[] = [
     tag: "Cay xé lưỡi, bùng nổ",
     image: "/images/layumba.jpg",
     details: {
-      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, ớt Jalapeño muối, phô mai mozzarella, cà chua",
+      ingredientsDescription: "Snack Lays, thịt heo xay, gia vị taco, xà lách, rau mùi, ớt Jalapeño muối, cà chua",
       sauce: "Tương ớt Sriracha, Sour cream, các loại gia vị cay."
     },
     ingredients: AVAILABLE_INGREDIENTS,
