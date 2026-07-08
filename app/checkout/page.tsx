@@ -304,7 +304,7 @@ export default function CheckoutPage() {
 
             <div className="bg-mustard border-2 border-blue rounded-2xl p-5 mb-6">
               <p className="text-blue font-bold text-lg">
-                Taco Tango sẽ trở lại vào Thứ 5 (09/07)
+                Taco Tango sẽ trở lại sớm thôiii
               </p>
             </div>
 
