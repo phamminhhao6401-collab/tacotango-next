@@ -24,13 +24,10 @@ interface EmailTemplateProps {
   deliverySlot: string;
   paymentMethod: string;
 
-  // Field cũ cho logic UEH / Thủ Đức
-  isUEHFreeShippingSlot?: string;
   isThuDucRequiredSlot?: string;
   shippingDiscountReason?: string;
   deliveryRestrictionNote?: string;
 
-  // Field mới cho mã freeship
   promoCode?: string;
   isPromoApplied?: string;
   promoDiscountReason?: string;
@@ -56,7 +53,6 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   deliverySlot,
   paymentMethod,
 
-  isUEHFreeShippingSlot = "Không",
   isThuDucRequiredSlot = "Không",
   shippingDiscountReason = "",
   deliveryRestrictionNote = "",
@@ -85,24 +81,10 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
       line.includes("Miễn phí ship bằng mã")
   );
 
-  const hasUEHFromNote = rawNoteLines.some(
-    (line) =>
-      line.includes("UEH") ||
-      line.includes("cơ sở B") ||
-      line.includes("Nguyễn Tri Phương")
-  );
-
   const hasThuDucFromNote = rawNoteLines.some(
     (line) =>
-      line.includes("Thủ Đức") ||
-      line.includes("T6 (03/07), 6:00 pm - 7:00 pm")
+      line.includes("Thủ Đức") || line.includes("6:00 pm - 7:00 pm")
   );
-
-  const isUEHSlot =
-    isUEHFreeShippingSlot === "Có" ||
-    deliverySlot.includes("UEH") ||
-    deliverySlot.includes("3:00 pm - 3:30 pm") ||
-    hasUEHFromNote;
 
   const isThuDucSlot =
     isThuDucRequiredSlot === "Có" ||
@@ -127,15 +109,13 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
 
   const shippingFeeText =
     shippingFee === 0
-      ? isUEHSlot
-        ? "Miễn phí - UEH cơ sở B"
-        : isPromoFreeShipping
-          ? normalizedPromoCode
-            ? `Miễn phí - mã ${normalizedPromoCode}`
-            : "Miễn phí - mã freeship"
-          : isSubtotalFreeShipping
-            ? "Miễn phí - đơn từ 150.000đ"
-            : "Miễn phí"
+      ? isPromoFreeShipping
+        ? normalizedPromoCode
+          ? `Miễn phí - mã ${normalizedPromoCode}`
+          : "Miễn phí - mã freeship"
+        : isSubtotalFreeShipping
+          ? "Miễn phí - đơn từ 150.000đ"
+          : "Miễn phí"
       : formatVND(shippingFee);
 
   const promoText =
@@ -145,6 +125,11 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
       : hasPromoFromNote
         ? "Đơn hàng đã áp dụng mã freeship"
         : "");
+
+  const renderIngredientPrice = (price: number) => {
+    if (price === 0) return "";
+    return ` (${formatVND(price)})`;
+  };
 
   return (
     <Html>
@@ -190,15 +175,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
             {isThuDucSlot && (
               <Text style={{ margin: "5px 0", color: "#ff6347" }}>
                 <strong>Lưu ý giao hàng:</strong> Khách ở Thủ Đức chỉ nhận hàng
-                vào T6 (03/07), 6:00 pm - 7:00 pm.
-              </Text>
-            )}
-
-            {isUEHSlot && (
-              <Text style={{ margin: "5px 0", color: "#15803d" }}>
-                <strong>Ưu đãi ship:</strong> Miễn phí ship cho sinh viên UEH
-                có mặt tại cơ sở B - Nguyễn Tri Phương vào T5 (02/07), 3:00 pm -
-                3:30 pm.
+                vào khung 6:00 pm - 7:00 pm mỗi ngày.
               </Text>
             )}
 
@@ -259,18 +236,6 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                 {item.name} x {item.quantity}
               </Text>
 
-              {typeof item.price === "number" && (
-                <Text
-                  style={{
-                    margin: "2px 0",
-                    fontSize: "13px",
-                    color: "#333",
-                  }}
-                >
-                  Giá món: {formatVND(item.price)}
-                </Text>
-              )}
-
               {(item.selectedIngredients || []).map((ing: any) => (
                 <Text
                   key={ing.id}
@@ -282,7 +247,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                 >
                   + {ing.name}
                   {typeof ing.price === "number"
-                    ? ` (${formatVND(ing.price)})`
+                    ? renderIngredientPrice(ing.price)
                     : ""}
                 </Text>
               ))}
@@ -300,12 +265,6 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
               <strong>Phí ship:</strong> {shippingFeeText}
             </Text>
 
-            {shippingFee === 0 && isUEHSlot && (
-              <Text style={{ margin: "5px 0", color: "#15803d" }}>
-                Phí ship đã được tự động miễn do khách chọn khung UEH cơ sở B.
-              </Text>
-            )}
-
             {shippingFee === 0 && isPromoFreeShipping && promoText && (
               <Text style={{ margin: "5px 0", color: "#15803d" }}>
                 {promoText}
@@ -314,18 +273,20 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
 
             {shippingFee === 0 &&
               isSubtotalFreeShipping &&
-              !isUEHSlot &&
               !isPromoFreeShipping && (
                 <Text style={{ margin: "5px 0", color: "#15803d" }}>
                   Đơn hàng từ 150.000đ nên được miễn phí ship.
                 </Text>
               )}
 
-            {shippingDiscountReason && !isUEHSlot && (
-              <Text style={{ margin: "5px 0", color: "#15803d" }}>
-                {shippingDiscountReason}
-              </Text>
-            )}
+            {shippingDiscountReason &&
+              shippingDiscountReason !== "Không có" &&
+              !isPromoFreeShipping &&
+              !isSubtotalFreeShipping && (
+                <Text style={{ margin: "5px 0", color: "#15803d" }}>
+                  {shippingDiscountReason}
+                </Text>
+              )}
 
             {deliveryRestrictionNote && !isThuDucSlot && (
               <Text style={{ margin: "5px 0", color: "#ff6347" }}>

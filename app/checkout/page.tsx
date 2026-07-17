@@ -52,8 +52,8 @@ const ORDERS_PAUSED = false;
 
 const DELIVERY_SLOTS = [
   {
-    value: "T4_2207_1000_1100",
-    label: "T4 (22/07): 10:00 am - 11:00 am",
+    value: "T4_2207_1100_1200",
+    label: "T4 (22/07): 11:00 am - 12:00 pm",
   },
   {
     value: "T4_2207_1500_1600",
@@ -64,8 +64,8 @@ const DELIVERY_SLOTS = [
     label: "T4 (22/07): 6:00 pm - 7:00 pm",
   },
   {
-    value: "T5_2307_1000_1100",
-    label: "T5 (23/07): 10:00 am - 11:00 am",
+    value: "T5_2307_1100_1200",
+    label: "T5 (23/07): 11:00 am - 12:00 pm",
   },
   {
     value: "T5_2307_1500_1600",
@@ -76,8 +76,8 @@ const DELIVERY_SLOTS = [
     label: "T5 (23/07): 6:00 pm - 7:00 pm",
   },
   {
-    value: "T6_2407_1000_1100",
-    label: "T6 (24/07): 10:00 am - 11:00 am",
+    value: "T6_2407_1100_1200",
+    label: "T6 (24/07): 11:00 am - 12:00 pm",
   },
   {
     value: "T6_2407_1500_1600",
@@ -155,9 +155,7 @@ export default function CheckoutPage() {
     isOrderValueFreeShipping
       ? `Miễn phí ship vì đơn hàng từ ${formatVND(FREE_SHIPPING_THRESHOLD)}`
       : "",
-    isPromoFreeShipping
-      ? `Miễn phí ship bằng mã ${normalizedPromoCode}`
-      : "",
+    isPromoFreeShipping ? `Miễn phí ship bằng mã ${normalizedPromoCode}` : "",
   ].filter(Boolean);
 
   const shippingFeeLabel =
@@ -286,11 +284,24 @@ export default function CheckoutPage() {
         clearCart();
         setOrderPlaced(true);
       } else {
-        alert("Lỗi gửi đơn!");
+        let errorMessage = "Lỗi gửi đơn!";
+
+        try {
+          const errorData = await res.json();
+
+          errorMessage = errorData?.detail
+            ? `${errorData.error}: ${errorData.detail}`
+            : errorData?.error || errorMessage;
+        } catch {
+          errorMessage = `Lỗi gửi đơn! Mã lỗi: ${res.status}`;
+        }
+
+        alert(errorMessage);
         setIsSubmitting(false);
       }
-    } catch {
-      alert("Lỗi kết nối!");
+    } catch (error) {
+      console.error("Lỗi kết nối:", error);
+      alert("Lỗi kết nối! Vui lòng kiểm tra mạng hoặc thử lại sau.");
       setIsSubmitting(false);
     }
   }
@@ -434,7 +445,8 @@ export default function CheckoutPage() {
                         key={ing.id}
                         className="text-xs text-tomato font-medium mt-1"
                       >
-                        + {ing.name} ({formatVND(ing.price)})
+                        + {ing.name}
+                        {ing.price > 0 ? ` (${formatVND(ing.price)})` : ""}
                       </p>
                     ))}
 
@@ -588,7 +600,7 @@ export default function CheckoutPage() {
               </p>
               <p className="text-xs mt-1 leading-relaxed">
                 Khách ở Thủ Đức chỉ nhận hàng vào khung 6:00 pm - 7:00 pm mỗi
-                ngày. Vui lòng chọn T5 hoặc T6 trong các khung giờ đang hiển
+                ngày. Vui lòng chọn T4, T5 hoặc T6 trong các khung giờ đang hiển
                 thị.
               </p>
             </div>
@@ -639,6 +651,10 @@ export default function CheckoutPage() {
             onChange={(e) => {
               setPaymentMethod(e.target.value);
               setFileMessage("");
+
+              if (e.target.value !== "Bank") {
+                setPaymentFile(null);
+              }
             }}
             className="p-3 rounded-lg border-2 border-blue"
           >
@@ -656,7 +672,7 @@ export default function CheckoutPage() {
               <div className="relative w-40 h-40 mx-auto border-2 border-blue rounded-lg overflow-hidden">
                 <Image
                   src="/images/qrmomo.jpg"
-                  alt="QR"
+                  alt="QR chuyển khoản MoMo"
                   fill
                   className="object-cover"
                 />
