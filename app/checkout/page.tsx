@@ -38,8 +38,9 @@ const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
 
 const THU_DUC_REQUIRED_SLOT_VALUES = [
-  "T5_0907_1800_1900",
-  "T6_1007_1800_1900",
+  "T4_2207_1800_1900",
+  "T5_2307_1800_1900",
+  "T6_2407_1800_1900",
 ];
 
 const VALID_FREE_SHIPPING_CODES = ["BANBE", "NGUOITHAN"] as const;
@@ -51,28 +52,40 @@ const ORDERS_PAUSED = false;
 
 const DELIVERY_SLOTS = [
   {
-    value: "T5_0907_1000_1100",
-    label: "T5 (09/07): 10:00 am - 11:00 am",
+    value: "T4_2207_1000_1100",
+    label: "T4 (22/07): 10:00 am - 11:00 am",
   },
   {
-    value: "T5_0907_1500_1600",
-    label: "T5 (09/07): 3:00 pm - 4:00 pm",
+    value: "T4_2207_1500_1600",
+    label: "T4 (22/07): 3:00 pm - 4:00 pm",
   },
   {
-    value: "T5_0907_1800_1900",
-    label: "T5 (09/07): 6:00 pm - 7:00 pm",
+    value: "T4_2207_1800_1900",
+    label: "T4 (22/07): 6:00 pm - 7:00 pm",
   },
   {
-    value: "T6_1007_1000_1100",
-    label: "T6 (10/07): 10:00 am - 11:00 am",
+    value: "T5_2307_1000_1100",
+    label: "T5 (23/07): 10:00 am - 11:00 am",
   },
   {
-    value: "T6_1007_1500_1600",
-    label: "T6 (10/07): 3:00 pm - 4:00 pm",
+    value: "T5_2307_1500_1600",
+    label: "T5 (23/07): 3:00 pm - 4:00 pm",
   },
   {
-    value: "T6_1007_1800_1900",
-    label: "T6 (10/07): 6:00 pm - 7:00 pm",
+    value: "T5_2307_1800_1900",
+    label: "T5 (23/07): 6:00 pm - 7:00 pm",
+  },
+  {
+    value: "T6_2407_1000_1100",
+    label: "T6 (24/07): 10:00 am - 11:00 am",
+  },
+  {
+    value: "T6_2407_1500_1600",
+    label: "T6 (24/07): 3:00 pm - 4:00 pm",
+  },
+  {
+    value: "T6_2407_1800_1900",
+    label: "T6 (24/07): 6:00 pm - 7:00 pm",
   },
 ];
 
@@ -497,7 +510,7 @@ export default function CheckoutPage() {
                 href="/#menu"
                 className="bg-tomato text-white px-8 py-3 rounded-full font-bold hover:bg-blue transition-colors"
               >
-                Vẫn còn đói? Xem menu tiếp nhé.
+                Đói rồi, chọn Taco thôi!
               </Link>
             </div>
           )}
