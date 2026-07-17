@@ -47,7 +47,7 @@ const VALID_FREE_SHIPPING_CODES = ["BANBE", "NGUOITHAN"] as const;
 type FreeShippingCode = (typeof VALID_FREE_SHIPPING_CODES)[number];
 
 // Đổi thành true khi Taco Tango muốn tạm đóng đơn
-const ORDERS_PAUSED = true;
+const ORDERS_PAUSED = false;
 
 const DELIVERY_SLOTS = [
   {
