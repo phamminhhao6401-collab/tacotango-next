@@ -3,6 +3,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { sendGAEvent } from "@next/third-parties/google";
 import {
   Minus,
   Plus,
@@ -281,6 +282,20 @@ export default function CheckoutPage() {
       });
 
       if (res.ok) {
+        // Bắn GA4 event purchase khi đơn được gửi thành công
+        sendGAEvent("event", "purchase", {
+          currency: "VND",
+          value: total,
+          transaction_id: `TT-${Date.now()}`,
+          shipping: shippingFee,
+          items: items.map((line) => ({
+            item_id: line.id,
+            item_name: line.name,
+            price: line.price,
+            quantity: line.quantity,
+          })),
+        });
+
         clearCart();
         setOrderPlaced(true);
       } else {
@@ -341,7 +356,7 @@ export default function CheckoutPage() {
               Theo dõi Instagram/Fanpage để nhận thông báo sớm nhất khi chúng
               mình mở đơn lại.
             </p>
-
+        
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
                 href="https://www.instagram.com/tacotango_2026"
@@ -352,7 +367,6 @@ export default function CheckoutPage() {
                 <Instagram className="h-5 w-5" />
                 Instagram
               </a>
-
               <a
                 href="https://www.facebook.com/profile.php?id=61590932327366"
                 target="_blank"

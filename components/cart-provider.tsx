@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { sendGAEvent } from "@next/third-parties/google";
 import type { TacoItem, Ingredient } from "@/lib/menu-data";
 
 export type CartLine = TacoItem & { 
@@ -47,6 +48,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isMounted]);
 
   const addItem = useCallback((item: TacoItem, selectedIngredients: Ingredient[]) => {
+    // Bắn GA4 event mỗi khi khách thêm món vào giỏ
+    const ingPrice = selectedIngredients.reduce((s, i) => s + i.price, 0);
+    sendGAEvent("event", "add_to_cart", {
+      currency: "VND",
+      value: item.price + ingPrice,
+      items: [{
+        item_id: item.id,
+        item_name: item.name,
+        price: item.price + ingPrice,
+        quantity: 1,
+      }],
+    });
+
     setItems((prev) => {
       const cartId = `${item.id}-${selectedIngredients.map(i => i.id).sort().join(",")}`;
       const existing = prev.find((line) => line.cartId === cartId);
