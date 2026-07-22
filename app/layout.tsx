@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Archivo_Black } from "next/font/google";
 import localFont from "next/font/local";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { CartProvider } from "@/components/cart-provider";
 import "./globals.css";
 
@@ -57,6 +58,7 @@ export default function RootLayout({
       >
         <CartProvider>{children}</CartProvider>
       </body>
+      <GoogleAnalytics gaId="G-C6XYHQHG56" />
     </html>
   );
 }
