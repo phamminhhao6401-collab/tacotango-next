@@ -19,6 +19,35 @@ import { formatVND } from "@/lib/menu-data";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
+interface CartIngredient {
+  id: string | number;
+  name: string;
+  price: number;
+}
+
+interface CartItem {
+  cartId: string;
+  id?: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  selectedIngredients?: CartIngredient[];
+}
+
+interface CheckCodeResponse {
+  valid: boolean;
+  type: "freeship" | "percent" | null;
+  value: number;
+  error?: string;
+}
+
+interface SendEmailResponse {
+  orderId?: string;
+  error?: string;
+  detail?: string;
+}
+
 const DISTRICTS = [
   "Quận 1",
   "Quận 3",
@@ -37,57 +66,20 @@ const DISTRICTS = [
 
 const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
+const MAX_FILE_SIZE_MB = 5;
 
 const THU_DUC_REQUIRED_SLOT_VALUES = [
-  "T4_2207_1800_1900",
-  "T5_2307_1800_1900",
-  "T6_2407_1800_1900",
+  "T5_3007_1600_1700",
+  "T6_3107_1600_1700",
 ];
 
-const VALID_FREE_SHIPPING_CODES = ["BANBE", "NGUOITHAN"] as const;
-
-type FreeShippingCode = (typeof VALID_FREE_SHIPPING_CODES)[number];
-
-// Đổi thành true khi Taco Tango muốn tạm đóng đơn
-const ORDERS_PAUSED = true;
+const ORDERS_PAUSED = false;
 
 const DELIVERY_SLOTS = [
-  {
-    value: "T4_2207_1100_1200",
-    label: "T4 (22/07): 11:00 am - 12:00 pm",
-  },
-  {
-    value: "T4_2207_1500_1600",
-    label: "T4 (22/07): 3:00 pm - 4:00 pm",
-  },
-  {
-    value: "T4_2207_1800_1900",
-    label: "T4 (22/07): 6:00 pm - 7:00 pm",
-  },
-  {
-    value: "T5_2307_1100_1200",
-    label: "T5 (23/07): 11:00 am - 12:00 pm",
-  },
-  {
-    value: "T5_2307_1500_1600",
-    label: "T5 (23/07): 3:00 pm - 4:00 pm",
-  },
-  {
-    value: "T5_2307_1800_1900",
-    label: "T5 (23/07): 6:00 pm - 7:00 pm",
-  },
-  {
-    value: "T6_2407_1100_1200",
-    label: "T6 (24/07): 11:00 am - 12:00 pm",
-  },
-  {
-    value: "T6_2407_1500_1600",
-    label: "T6 (24/07): 3:00 pm - 4:00 pm",
-  },
-  {
-    value: "T6_2407_1800_1900",
-    label: "T6 (24/07): 6:00 pm - 7:00 pm",
-  },
+  { value: "T5_3007_1100_1200", label: "T5 (30/07): 11:00 am - 12:00 pm" },
+  { value: "T5_3007_1600_1700", label: "T5 (30/07): 4:00 pm - 5:00 pm" },
+  { value: "T6_3107_1100_1200", label: "T6 (31/07): 11:00 am - 12:00 pm" },
+  { value: "T6_3107_1600_1700", label: "T6 (31/07): 4:00 pm - 5:00 pm" },
 ];
 
 export default function CheckoutPage() {
@@ -119,9 +111,13 @@ export default function CheckoutPage() {
   const [promoCode, setPromoCode] = useState("");
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
+  const [promoType, setPromoType] = useState<"freeship" | "percent" | null>(null);
+  const [promoValue, setPromoValue] = useState(0);
+  const [isCheckingPromo, setIsCheckingPromo] = useState(false);
 
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const isThuDucDistrict = form.district === "Thủ Đức";
 
@@ -137,26 +133,31 @@ export default function CheckoutPage() {
 
   const normalizedPromoCode = promoCode.trim().toUpperCase();
 
-  const isPromoCodeValid = VALID_FREE_SHIPPING_CODES.includes(
-    normalizedPromoCode as FreeShippingCode
-  );
-
   const isThuDucRequiredSlot =
     isThuDucDistrict && THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot);
 
-  const isPromoFreeShipping = isPromoApplied && isPromoCodeValid;
+  const isPromoFreeShipping = isPromoApplied && promoType === "freeship";
+  const isPromoPercentDiscount = isPromoApplied && promoType === "percent";
   const isOrderValueFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
 
   const isFreeShipping = isOrderValueFreeShipping || isPromoFreeShipping;
 
   const shippingFee = isFreeShipping ? 0 : SHIPPING_FEE;
-  const total = subtotal + shippingFee;
+  const percentDiscountAmount = isPromoPercentDiscount
+    ? Math.round(subtotal * (promoValue / 100))
+    : 0;
+
+  const calculatedTotal = subtotal + shippingFee - percentDiscountAmount;
+  const total = calculatedTotal < 0 ? 0 : calculatedTotal;
 
   const shippingDiscountReasons = [
     isOrderValueFreeShipping
       ? `Miễn phí ship vì đơn hàng từ ${formatVND(FREE_SHIPPING_THRESHOLD)}`
       : "",
     isPromoFreeShipping ? `Miễn phí ship bằng mã ${normalizedPromoCode}` : "",
+    isPromoPercentDiscount
+      ? `Giảm ${promoValue}% giá trị đơn bằng mã ${normalizedPromoCode}`
+      : "",
   ].filter(Boolean);
 
   const shippingFeeLabel =
@@ -167,6 +168,7 @@ export default function CheckoutPage() {
       : formatVND(SHIPPING_FEE);
 
   const handleDistrictChange = (district: string) => {
+    setFormError("");
     setForm((prev) => ({
       ...prev,
       district,
@@ -182,40 +184,103 @@ export default function CheckoutPage() {
 
   const handlePromoCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPromoCode(e.target.value);
+    if (isPromoApplied) {
+      setIsPromoApplied(false);
+      setPromoType(null);
+      setPromoValue(0);
+      setPromoMessage("");
+    }
+  };
+
+  const handleRemovePromoCode = () => {
     setIsPromoApplied(false);
+    setPromoType(null);
+    setPromoValue(0);
+    setPromoCode("");
     setPromoMessage("");
   };
 
-  const handleApplyPromoCode = () => {
+  const handleApplyPromoCode = async () => {
+    setFormError("");
     if (!normalizedPromoCode) {
       setIsPromoApplied(false);
-      setPromoMessage("Vui lòng nhập mã freeship.");
+      setPromoMessage("Vui lòng nhập mã.");
       return;
     }
 
-    if (!isPromoCodeValid) {
+    setIsCheckingPromo(true);
+    setPromoMessage("");
+
+    try {
+      const res = await fetch("/api/check-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: normalizedPromoCode }),
+      });
+
+      const data: CheckCodeResponse = await res.json();
+
+      if (!res.ok || !data.valid) {
+        setIsPromoApplied(false);
+        setPromoType(null);
+        setPromoMessage(data.error || "Mã không hợp lệ.");
+        return;
+      }
+
+      setPromoCode(normalizedPromoCode);
+      setIsPromoApplied(true);
+      setPromoType(data.type);
+      setPromoValue(data.value);
+
+      setPromoMessage(
+        data.type === "freeship"
+          ? `Áp dụng mã ${normalizedPromoCode} thành công - miễn phí ship.`
+          : `Áp dụng mã ${normalizedPromoCode} thành công - giảm ${data.value}% giá trị đơn.`
+      );
+    } catch {
       setIsPromoApplied(false);
-      setPromoMessage("Mã freeship không hợp lệ.");
-      return;
+      setPromoMessage("Lỗi kết nối, vui lòng thử lại.");
+    } finally {
+      setIsCheckingPromo(false);
     }
-
-    setPromoCode(normalizedPromoCode);
-    setIsPromoApplied(true);
-    setPromoMessage(`Áp dụng mã ${normalizedPromoCode} thành công.`);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setPaymentFile(e.target.files[0]);
-      setFileMessage(`Đã chọn: ${e.target.files[0].name}`);
+    setFormError("");
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      setPaymentFile(null);
+      setFileMessage("");
+      return;
     }
+
+    if (!file.type.startsWith("image/")) {
+      setPaymentFile(null);
+      setFileMessage("");
+      setFormError("Vui lòng chọn file hình ảnh (jpeg, png, jpg, v.v.).");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setPaymentFile(null);
+      setFileMessage("");
+      setFormError(`Dung lượng ảnh tối đa là ${MAX_FILE_SIZE_MB}MB.`);
+      return;
+    }
+
+    setPaymentFile(file);
+    setFileMessage(`Đã chọn: ${file.name}`);
   };
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setFormError("");
 
-    if (items.length === 0) {
-      alert("Giỏ hàng đang trống!");
+    if (isSubmitting) return;
+
+    if (!items || items.length === 0) {
+      setFormError("Giỏ hàng đang trống!");
       return;
     }
 
@@ -223,100 +288,127 @@ export default function CheckoutPage() {
       form.district === "Thủ Đức" &&
       !THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot)
     ) {
-      alert(
-        "Khách ở Thủ Đức chỉ có thể nhận hàng vào khung 6:00 pm - 7:00 pm mỗi ngày."
+      setFormError(
+        "Khách ở Thủ Đức chỉ có thể nhận hàng vào khung 4:00 pm - 5:00 pm mỗi ngày."
+      );
+      return;
+    }
+
+    const phoneRegex = /^(0[35789]|84[35789])[0-9]{8}$/;
+    if (!phoneRegex.test(form.phone)) {
+      setFormError("Vui lòng nhập số điện thoại Việt Nam hợp lệ.");
+      return;
+    }
+
+    if (promoCode.trim() !== "" && !isPromoApplied) {
+      setFormError(
+        "Bạn chưa ấn 'Áp dụng' mã ưu đãi hoặc mã không hợp lệ. Vui lòng kiểm tra lại hoặc xóa mã."
       );
       return;
     }
 
     if (paymentMethod === "Bank" && !paymentFile) {
-      setFileMessage("Vui lòng tải ảnh xác nhận chuyển khoản!");
+      setFormError("Vui lòng tải ảnh xác nhận chuyển khoản!");
       return;
     }
 
     setIsSubmitting(true);
 
-    const data = new FormData();
-
-    data.append("name", form.name);
-    data.append("email", form.email);
-    data.append("phone", form.phone);
-    data.append("district", form.district);
-    data.append("address", form.address);
-    data.append("note", form.note);
-
-    data.append("deliverySlot", selectedDeliverySlot?.label || deliverySlot);
-    data.append("paymentMethod", paymentMethod);
-
-    data.append("isThuDucRequiredSlot", isThuDucRequiredSlot ? "Có" : "Không");
-    data.append("isPromoFreeShipping", isPromoFreeShipping ? "Có" : "Không");
-    data.append("promoCode", isPromoFreeShipping ? normalizedPromoCode : "");
-
-    data.append(
-      "shippingDiscountReason",
-      shippingDiscountReasons.length > 0
-        ? shippingDiscountReasons.join(" | ")
-        : "Không có"
-    );
-
-    if (isThuDucRequiredSlot) {
-      data.append(
-        "deliveryRestrictionNote",
-        "Khách ở Thủ Đức chỉ nhận hàng vào khung 6:00 pm - 7:00 pm mỗi ngày"
-      );
-    }
-
-    data.append("items", JSON.stringify(items));
-    data.append("subtotal", subtotal.toString());
-    data.append("shippingFee", shippingFee.toString());
-    data.append("total", total.toString());
-
-    if (paymentFile) {
-      data.append("paymentFile", paymentFile);
-    }
-
     try {
+      const data = new FormData();
+
+      data.append("name", form.name);
+      data.append("email", form.email);
+      data.append("phone", form.phone);
+      data.append("district", form.district);
+      data.append("address", form.address);
+      data.append("note", form.note);
+
+      data.append("deliverySlot", selectedDeliverySlot?.label || deliverySlot);
+      data.append("paymentMethod", paymentMethod);
+
+      data.append("isThuDucRequiredSlot", isThuDucRequiredSlot ? "Có" : "Không");
+      data.append("isPromoFreeShipping", isPromoFreeShipping ? "Có" : "Không");
+      data.append("isPromoPercentDiscount", isPromoPercentDiscount ? "Có" : "Không");
+      data.append("promoCode", isPromoApplied ? normalizedPromoCode : "");
+
+      data.append(
+        "shippingDiscountReason",
+        shippingDiscountReasons.length > 0
+          ? shippingDiscountReasons.join(" | ")
+          : "Không có"
+      );
+
+      if (isThuDucRequiredSlot) {
+        data.append(
+          "deliveryRestrictionNote",
+          "Khách ở Thủ Đức chỉ nhận hàng vào khung 4:00 pm - 5:00 pm mỗi ngày"
+        );
+      }
+
+      const optimizedItems = items.map((item: CartItem) => ({
+        id: item.id || item.cartId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        selectedIngredients: item.selectedIngredients || [],
+      }));
+      data.append("items", JSON.stringify(optimizedItems));
+
+      data.append("subtotal", subtotal.toString());
+      data.append("shippingFee", shippingFee.toString());
+      data.append("percentDiscountAmount", percentDiscountAmount.toString());
+      data.append("total", total.toString());
+
+      if (paymentFile) {
+        data.append("paymentFile", paymentFile);
+      }
+
       const res = await fetch("/api/send-email", {
         method: "POST",
         body: data,
       });
 
-      if (res.ok) {
-        // Bắn GA4 event purchase khi đơn được gửi thành công
-        sendGAEvent("event", "purchase", {
-          currency: "VND",
-          value: total,
-          transaction_id: `TT-${Date.now()}`,
-          shipping: shippingFee,
-          items: items.map((line) => ({
-            item_id: line.id,
-            item_name: line.name,
-            price: line.price,
-            quantity: line.quantity,
-          })),
-        });
+      const responseData: SendEmailResponse = await res.json().catch(() => ({}));
 
-        clearCart();
-        setOrderPlaced(true);
-      } else {
-        let errorMessage = "Lỗi gửi đơn!";
+      if (!res.ok) {
+        const errorMessage = responseData.detail
+          ? `${responseData.error}: ${responseData.detail}`
+          : responseData.error || `Lỗi gửi đơn! Mã lỗi: ${res.status}`;
 
-        try {
-          const errorData = await res.json();
-
-          errorMessage = errorData?.detail
-            ? `${errorData.error}: ${errorData.detail}`
-            : errorData?.error || errorMessage;
-        } catch {
-          errorMessage = `Lỗi gửi đơn! Mã lỗi: ${res.status}`;
-        }
-
-        alert(errorMessage);
+        setFormError(errorMessage);
         setIsSubmitting(false);
+        return;
       }
+
+      const finalOrderId = responseData.orderId || `TT-${Date.now()}`;
+
+      sendGAEvent("event", "purchase", {
+        currency: "VND",
+        value: total,
+        transaction_id: finalOrderId,
+        shipping: shippingFee,
+        items: items.map((line: CartItem) => ({
+          item_id: line.id || line.cartId,
+          item_name: line.name,
+          price: line.price,
+          quantity: line.quantity,
+        })),
+      });
+
+      if (isPromoApplied && normalizedPromoCode) {
+        fetch("/api/use-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: normalizedPromoCode }),
+        }).catch((err) => console.error("Lỗi đánh dấu mã đã dùng:", err));
+      }
+
+      clearCart();
+      setOrderPlaced(true);
     } catch (error) {
       console.error("Lỗi kết nối:", error);
-      alert("Lỗi kết nối! Vui lòng kiểm tra mạng hoặc thử lại sau.");
+      setFormError("Lỗi kết nối! Vui lòng kiểm tra mạng hoặc thử lại sau.");
       setIsSubmitting(false);
     }
   }
@@ -356,7 +448,7 @@ export default function CheckoutPage() {
               Theo dõi Instagram/Fanpage để nhận thông báo sớm nhất khi chúng
               mình mở đơn lại.
             </p>
-        
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
                 href="https://www.instagram.com/tacotango_2026"
@@ -394,9 +486,7 @@ export default function CheckoutPage() {
 
   if (!isMounted) {
     return (
-      <div className="min-h-screen bg-mustard p-20 text-center">
-        Đang tải...
-      </div>
+      <div className="min-h-screen bg-mustard p-20 text-center">Đang tải...</div>
     );
   }
 
@@ -425,9 +515,9 @@ export default function CheckoutPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-16 grid lg:grid-cols-2 gap-10">
         <section className="flex flex-col gap-4">
-          {items.length > 0 ? (
+          {items && items.length > 0 ? (
             <>
-              {items.map((line) => (
+              {items.map((line: CartItem) => (
                 <div
                   key={line.cartId}
                   className="p-4 border-3 border-blue bg-cream rounded-2xl flex items-center gap-4"
@@ -448,13 +538,14 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => removeItem(line.cartId)}
-                        className="text-tomato"
+                        className="text-tomato disabled:opacity-50"
+                        disabled={isSubmitting}
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
 
-                    {(line.selectedIngredients || []).map((ing: any) => (
+                    {(line.selectedIngredients || []).map((ing: CartIngredient) => (
                       <p
                         key={ing.id}
                         className="text-xs text-tomato font-medium mt-1"
@@ -473,7 +564,8 @@ export default function CheckoutPage() {
                         <button
                           type="button"
                           onClick={() => decrement(line.cartId)}
-                          className="p-1 border rounded"
+                          className="p-1 border rounded disabled:opacity-50"
+                          disabled={isSubmitting}
                         >
                           <Minus size={14} />
                         </button>
@@ -483,7 +575,8 @@ export default function CheckoutPage() {
                         <button
                           type="button"
                           onClick={() => increment(line.cartId)}
-                          className="p-1 border rounded"
+                          className="p-1 border rounded disabled:opacity-50"
+                          disabled={isSubmitting}
                         >
                           <Plus size={14} />
                         </button>
@@ -497,6 +590,12 @@ export default function CheckoutPage() {
                 <p>Tạm tính: {formatVND(subtotal)}</p>
 
                 <p>Phí ship: {shippingFeeLabel}</p>
+
+                {isPromoPercentDiscount && (
+                  <p>
+                    Giảm giá ({promoValue}%): -{formatVND(percentDiscountAmount)}
+                  </p>
+                )}
 
                 {isOrderValueFreeShipping && (
                   <p className="text-xs mt-1 text-cream/90">
@@ -512,10 +611,17 @@ export default function CheckoutPage() {
                   </p>
                 )}
 
+                {isPromoPercentDiscount && (
+                  <p className="text-xs mt-1 text-cream/90">
+                    Bạn đã áp dụng mã {normalizedPromoCode}. Đơn hàng được giảm{" "}
+                    {promoValue}%.
+                  </p>
+                )}
+
                 {isThuDucRequiredSlot && (
                   <p className="text-xs mt-1 text-cream/90">
                     Bạn đang chọn khu vực Thủ Đức. Khung nhận hàng áp dụng là
-                    6:00 pm - 7:00 pm.
+                    4:00 pm - 5:00 pm.
                   </p>
                 )}
 
@@ -546,12 +652,22 @@ export default function CheckoutPage() {
           onSubmit={handleSubmit}
           className="bg-mustard p-6 rounded-2xl border-3 border-blue flex flex-col gap-4"
         >
+          {formError && (
+            <div className="p-4 bg-tomato/10 border-2 border-tomato rounded-xl text-tomato font-bold text-sm">
+              {formError}
+            </div>
+          )}
+
           <input
             required
             placeholder="Họ và tên"
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="p-3 rounded-lg border-2 border-blue"
+            onChange={(e) => {
+              setFormError("");
+              setForm({ ...form, name: e.target.value });
+            }}
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           />
 
           <input
@@ -559,23 +675,32 @@ export default function CheckoutPage() {
             type="email"
             placeholder="Email"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="p-3 rounded-lg border-2 border-blue"
+            onChange={(e) => {
+              setFormError("");
+              setForm({ ...form, email: e.target.value });
+            }}
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           />
 
           <input
             required
             placeholder="Số điện thoại"
             value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="p-3 rounded-lg border-2 border-blue"
+            onChange={(e) => {
+              setFormError("");
+              setForm({ ...form, phone: e.target.value });
+            }}
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           />
 
           <select
             required
             value={form.district}
             onChange={(e) => handleDistrictChange(e.target.value)}
-            className="p-3 rounded-lg border-2 border-blue"
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           >
             <option value="">Chọn Quận/Huyện</option>
             {DISTRICTS.map((d) => (
@@ -589,15 +714,23 @@ export default function CheckoutPage() {
             required
             placeholder="Địa chỉ chi tiết"
             value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-            className="p-3 rounded-lg border-2 border-blue"
+            onChange={(e) => {
+              setFormError("");
+              setForm({ ...form, address: e.target.value });
+            }}
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           />
 
           <select
             required
             value={deliverySlot}
-            onChange={(e) => setDeliverySlot(e.target.value)}
-            className="p-3 rounded-lg border-2 border-blue"
+            onChange={(e) => {
+              setFormError("");
+              setDeliverySlot(e.target.value);
+            }}
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           >
             <option value="">Chọn khung giờ ship</option>
             {availableDeliverySlots.map((slot) => (
@@ -613,45 +746,58 @@ export default function CheckoutPage() {
                 Khung giờ dành cho khu vực Thủ Đức
               </p>
               <p className="text-xs mt-1 leading-relaxed">
-                Khách ở Thủ Đức chỉ nhận hàng vào khung 6:00 pm - 7:00 pm mỗi
-                ngày. Vui lòng chọn T4, T5 hoặc T6 trong các khung giờ đang hiển
+                Khách ở Thủ Đức chỉ nhận hàng vào khung 4:00 pm - 5:00 pm mỗi
+                ngày. Vui lòng chọn T5 hoặc T6 trong các khung giờ đang hiển
                 thị.
               </p>
             </div>
           )}
 
           <div className="p-4 border-2 border-blue rounded-xl bg-cream space-y-2">
-            <p className="font-bold text-blue text-sm uppercase">
-              Mã freeship
-            </p>
+            <p className="font-bold text-blue text-sm uppercase">Mã ưu đãi</p>
 
             <div className="flex gap-2">
               <input
-                placeholder="Nhập mã freeship nếu có"
+                placeholder="Nhập mã ưu đãi nếu có"
                 value={promoCode}
                 onChange={handlePromoCodeChange}
+                disabled={isPromoApplied || isSubmitting || isCheckingPromo}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !isPromoApplied) {
                     e.preventDefault();
                     handleApplyPromoCode();
                   }
                 }}
-                className="p-3 rounded-lg border-2 border-blue flex-grow"
+                className="p-3 rounded-lg border-2 border-blue flex-grow disabled:opacity-60 disabled:bg-gray-100"
               />
 
-              <button
-                type="button"
-                onClick={handleApplyPromoCode}
-                className="bg-blue text-mustard px-4 rounded-lg font-bold hover:bg-blue/90 transition-colors"
-              >
-                Áp dụng
-              </button>
+              {isPromoApplied ? (
+                <button
+                  type="button"
+                  onClick={handleRemovePromoCode}
+                  disabled={isSubmitting}
+                  className="bg-tomato text-white px-4 rounded-lg font-bold hover:bg-tomato/90 transition-colors disabled:opacity-60"
+                >
+                  Huỷ
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleApplyPromoCode}
+                  disabled={
+                    isCheckingPromo || isSubmitting || !promoCode.trim()
+                  }
+                  className="bg-blue text-mustard px-4 rounded-lg font-bold hover:bg-blue/90 transition-colors disabled:opacity-60"
+                >
+                  {isCheckingPromo ? "Đang kiểm tra..." : "Áp dụng"}
+                </button>
+              )}
             </div>
 
             {promoMessage && (
               <p
                 className={`text-xs font-bold ${
-                  isPromoFreeShipping ? "text-green-700" : "text-tomato"
+                  isPromoApplied ? "text-green-700" : "text-tomato"
                 }`}
               >
                 {promoMessage}
@@ -663,6 +809,7 @@ export default function CheckoutPage() {
             required
             value={paymentMethod}
             onChange={(e) => {
+              setFormError("");
               setPaymentMethod(e.target.value);
               setFileMessage("");
 
@@ -670,7 +817,8 @@ export default function CheckoutPage() {
                 setPaymentFile(null);
               }
             }}
-            className="p-3 rounded-lg border-2 border-blue"
+            disabled={isSubmitting}
+            className="p-3 rounded-lg border-2 border-blue disabled:opacity-60"
           >
             <option value="">Chọn phương thức thanh toán</option>
             <option value="COD">Thanh toán khi nhận hàng (COD)</option>
@@ -704,13 +852,18 @@ export default function CheckoutPage() {
                 </p>
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer bg-blue text-mustard px-4 py-2 rounded-lg text-sm w-max mx-auto hover:bg-blue/90 transition-colors">
+              <label
+                className={`flex items-center gap-2 cursor-pointer bg-blue text-mustard px-4 py-2 rounded-lg text-sm w-max mx-auto hover:bg-blue/90 transition-colors ${
+                  isSubmitting ? "opacity-60 pointer-events-none" : ""
+                }`}
+              >
                 <Upload size={16} /> Tải ảnh xác nhận
                 <input
                   type="file"
                   className="hidden"
                   accept="image/*"
                   onChange={handleFileChange}
+                  disabled={isSubmitting}
                 />
               </label>
 
@@ -729,9 +882,16 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="p-4 rounded-full font-bold bg-tomato text-white disabled:opacity-60 disabled:cursor-not-allowed"
+            className="p-4 rounded-full font-bold bg-tomato text-white hover:bg-tomato/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2"
           >
-            {isSubmitting ? "Đang gửi..." : "Xác nhận đặt hàng"}
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Đang xử lý...
+              </>
+            ) : (
+              "Xác nhận đặt hàng"
+            )}
           </button>
         </form>
       </main>

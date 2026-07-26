@@ -1,5 +1,6 @@
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
+import { MoodSpinBanner } from "@/components/mood-spin-banner";
 import { StorySection } from "@/components/story-section";
 import { MenuSection } from "@/components/menu-section";
 import { FaqSection } from "@/components/faq-section";
@@ -11,6 +12,7 @@ export default function HomePage() {
       <SiteHeader />
       <main>
         <Hero />
+        <MoodSpinBanner />
         <StorySection />
         <MenuSection />
         <FaqSection />
