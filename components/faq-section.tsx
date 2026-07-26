@@ -15,7 +15,7 @@ const FAQS = [
   },
   {
     q: "Tụi mình giao khi nào?",
-    a: "Tụi mình sẽ gom order rồi giao vào T4 và T5 hàng tuần. Tranh thủ đặt nha!!!",
+    a: "Tụi mình sẽ gom order rồi giao vào T5 và T6. Tranh thủ đặt nha!!!",
   },
   {
     q: "Có món nào cho HỆ YẾU ĐUỐI không?",
