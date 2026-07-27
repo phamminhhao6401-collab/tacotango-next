@@ -384,10 +384,12 @@ export default function CheckoutPage() {
       const finalOrderId = responseData.orderId || `TT-${Date.now()}`;
 
       sendGAEvent("event", "purchase", {
+        debug_mode: true, 
         currency: "VND",
         value: total,
         transaction_id: finalOrderId,
         shipping: shippingFee,
+        coupon: isPromoApplied ? normalizedPromoCode : undefined,
         items: items.map((line: CartItem) => ({
           item_id: line.id || line.cartId,
           item_name: line.name,
