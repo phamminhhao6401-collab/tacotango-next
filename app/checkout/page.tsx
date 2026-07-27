@@ -68,18 +68,10 @@ const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
 const MAX_FILE_SIZE_MB = 5;
 
-const THU_DUC_REQUIRED_SLOT_VALUES = [
-  "T5_3007_1600_1700",
-  "T6_3107_1600_1700",
-];
-
 const ORDERS_PAUSED = false;
 
 const DELIVERY_SLOTS = [
-  { value: "T5_3007_1100_1200", label: "T5 (30/07): 11:00 am - 12:00 pm" },
-  { value: "T5_3007_1600_1700", label: "T5 (30/07): 4:00 pm - 5:00 pm" },
-  { value: "T6_3107_1100_1200", label: "T6 (31/07): 11:00 am - 12:00 pm" },
-  { value: "T6_3107_1600_1700", label: "T6 (31/07): 4:00 pm - 5:00 pm" },
+  { value: "T4_2907_0900_1100", label: "T4 (29/07): 9:00 am - 11:00 am" },
 ];
 
 export default function CheckoutPage() {
@@ -119,13 +111,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const isThuDucDistrict = form.district === "Thủ Đức";
-
-  const availableDeliverySlots = isThuDucDistrict
-    ? DELIVERY_SLOTS.filter((slot) =>
-        THU_DUC_REQUIRED_SLOT_VALUES.includes(slot.value)
-      )
-    : DELIVERY_SLOTS;
+  const availableDeliverySlots = DELIVERY_SLOTS;
 
   const selectedDeliverySlot = DELIVERY_SLOTS.find(
     (slot) => slot.value === deliverySlot
@@ -133,8 +119,9 @@ export default function CheckoutPage() {
 
   const normalizedPromoCode = promoCode.trim().toUpperCase();
 
-  const isThuDucRequiredSlot =
-    isThuDucDistrict && THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot);
+  const isSelectedDeliverySlot = DELIVERY_SLOTS.some(
+    (slot) => slot.value === deliverySlot
+  );
 
   const isPromoFreeShipping = isPromoApplied && promoType === "freeship";
   const isPromoPercentDiscount = isPromoApplied && promoType === "percent";
@@ -171,16 +158,9 @@ export default function CheckoutPage() {
     setFormError("");
     setForm((prev) => ({
       ...prev,
-      district,
-    }));
-
-    if (
-      district === "Thủ Đức" &&
-      !THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot)
-    ) {
-      setDeliverySlot("");
-    }
-  };
+     district,
+      }));
+    };
 
   const handlePromoCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPromoCode(e.target.value);
@@ -284,16 +264,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (
-      form.district === "Thủ Đức" &&
-      !THU_DUC_REQUIRED_SLOT_VALUES.includes(deliverySlot)
-    ) {
-      setFormError(
-        "Khách ở Thủ Đức chỉ có thể nhận hàng vào khung 4:00 pm - 5:00 pm mỗi ngày."
-      );
-      return;
-    }
-
     const phoneRegex = /^(0[35789]|84[35789])[0-9]{8}$/;
     if (!phoneRegex.test(form.phone)) {
       setFormError("Vui lòng nhập số điện thoại Việt Nam hợp lệ.");
@@ -327,7 +297,7 @@ export default function CheckoutPage() {
       data.append("deliverySlot", selectedDeliverySlot?.label || deliverySlot);
       data.append("paymentMethod", paymentMethod);
 
-      data.append("isThuDucRequiredSlot", isThuDucRequiredSlot ? "Có" : "Không");
+      data.append("deliveryRestrictionNote", "Tất cả đơn hàng giao vào T4 (29/07) từ 9:00 am - 11:00 am");
       data.append("isPromoFreeShipping", isPromoFreeShipping ? "Có" : "Không");
       data.append("isPromoPercentDiscount", isPromoPercentDiscount ? "Có" : "Không");
       data.append("promoCode", isPromoApplied ? normalizedPromoCode : "");
@@ -338,13 +308,6 @@ export default function CheckoutPage() {
           ? shippingDiscountReasons.join(" | ")
           : "Không có"
       );
-
-      if (isThuDucRequiredSlot) {
-        data.append(
-          "deliveryRestrictionNote",
-          "Khách ở Thủ Đức chỉ nhận hàng vào khung 4:00 pm - 5:00 pm mỗi ngày"
-        );
-      }
 
       const optimizedItems = items.map((item: CartItem) => ({
         id: item.id || item.cartId,
@@ -619,10 +582,9 @@ export default function CheckoutPage() {
                   </p>
                 )}
 
-                {isThuDucRequiredSlot && (
+                {isSelectedDeliverySlot && (
                   <p className="text-xs mt-1 text-cream/90">
-                    Bạn đang chọn khu vực Thủ Đức. Khung nhận hàng áp dụng là
-                    4:00 pm - 5:00 pm.
+                    Tất cả đơn hàng sẽ được giao vào T4 (29/07): 9:00 am - 11:00 am.
                   </p>
                 )}
 
@@ -741,18 +703,15 @@ export default function CheckoutPage() {
             ))}
           </select>
 
-          {isThuDucDistrict && (
-            <div className="p-4 rounded-xl border-2 border-blue bg-cream text-blue">
-              <p className="font-bold text-sm">
-                Khung giờ dành cho khu vực Thủ Đức
-              </p>
-              <p className="text-xs mt-1 leading-relaxed">
-                Khách ở Thủ Đức chỉ nhận hàng vào khung 4:00 pm - 5:00 pm mỗi
-                ngày. Vui lòng chọn T5 hoặc T6 trong các khung giờ đang hiển
-                thị.
-              </p>
-            </div>
-          )}
+          <div className="p-4 rounded-xl border-2 border-blue bg-cream text-blue">
+            <p className="font-bold text-sm">
+              Thời gian giao hàng
+            </p>
+
+            <p className="text-xs mt-1 leading-relaxed">
+              Tất cả đơn hàng sẽ được giao vào T4 (29/07) từ 9:00 am - 11:00 am.
+            </p>
+          </div>
 
           <div className="p-4 border-2 border-blue rounded-xl bg-cream space-y-2">
             <p className="font-bold text-blue text-sm uppercase">Mã ưu đãi</p>
