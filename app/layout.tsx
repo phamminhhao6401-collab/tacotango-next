@@ -59,7 +59,7 @@ export default function RootLayout({
         <CartProvider>{children}</CartProvider>
         
         {/* GoogleAnalytics đã được đưa vào trong body để hoạt động chính xác */}
-        <GoogleAnalytics gaId="G-9DCF7CN9H4" />
+        <GoogleAnalytics gaId="G-C6XYHQHG56" />
       </body>
     </html>
   );
