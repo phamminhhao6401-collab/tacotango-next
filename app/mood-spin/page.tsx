@@ -50,6 +50,7 @@ const QUOTES: Record<string, string> = {
 
 export default function MoodSpinPage() {
   const router = useRouter();
+
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [phone, setPhone] = useState("");
@@ -57,16 +58,41 @@ export default function MoodSpinPage() {
   const [result, setResult] = useState<{ code: string; label: string } | null>(null);
   const [error, setError] = useState("");
 
+  // THÊM MỚI
+  const [copied, setCopied] = useState(false);
+
   const currentQuestion = MOOD_QUESTIONS[step];
+
 
   const handleAnswer = (option: string) => {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: option }));
+
     if (step < MOOD_QUESTIONS.length - 1) {
       setStep(step + 1);
     } else {
-      setStep(MOOD_QUESTIONS.length); // chuyển sang bước nhập SĐT
+      setStep(MOOD_QUESTIONS.length);
     }
   };
+
+
+  // THÊM MỚI: COPY MÃ
+  const copyVoucher = async () => {
+    if (!result?.code) return;
+
+    try {
+      await navigator.clipboard.writeText(result.code);
+
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error("Copy failed:", error);
+    }
+  };
+
 
   const handleSpin = async () => {
     if (!phone.trim()) {
@@ -92,45 +118,87 @@ export default function MoodSpinPage() {
         return;
       }
 
-      // Giữ hiệu ứng quay 2 giây cho đẹp mắt trước khi hiện kết quả
       setTimeout(() => {
         setResult(data);
         setIsSpinning(false);
       }, 2000);
+
     } catch {
       setError("Lỗi kết nối, vui lòng thử lại.");
       setIsSpinning(false);
     }
   };
 
+
   if (result) {
-    const moodQuote = QUOTES[answers.mood] || "Cảm ơn bạn đã chia sẻ cùng Taco Tango!";
+    const moodQuote =
+      QUOTES[answers.mood] ||
+      "Cảm ơn bạn đã chia sẻ cùng Taco Tango!";
+
+
     return (
       <div className="min-h-screen bg-mustard flex flex-col items-center justify-center text-center p-6">
-        <p className="text-blue italic mb-6 max-w-md">"{moodQuote}"</p>
+
+        <p className="text-blue italic mb-6 max-w-md">
+          "{moodQuote}"
+        </p>
+
+
         <h1 className="text-3xl text-blue font-saigon2 mb-4">
-          Bạn nhận được mã: {result.code}
+          Bạn nhận được mã:
         </h1>
-        <p className="text-tomato font-bold mb-8">{result.label}</p>
+
+
+        {/* THÊM MỚI: HIỂN THỊ CODE + COPY */}
+        <div className="flex items-center gap-3 mb-4">
+
+          <span className="bg-cream border-2 border-blue px-5 py-3 rounded-xl text-blue font-bold">
+            {result.code}
+          </span>
+
+
+          <button
+            onClick={copyVoucher}
+            className="bg-blue text-mustard px-4 py-3 rounded-xl font-bold hover:bg-cream hover:text-blue transition-colors"
+          >
+            {copied ? "Đã copy ✓" : "Copy mã"}
+          </button>
+
+        </div>
+
+
+        <p className="text-tomato font-bold mb-8">
+          {result.label}
+        </p>
+
+
         <button
           onClick={() => router.push("/checkout")}
           className="bg-tomato text-white px-8 py-4 rounded-full font-bold"
         >
           Dùng mã ngay
         </button>
+
       </div>
     );
   }
 
+
   return (
     <div className="min-h-screen bg-mustard flex flex-col items-center justify-center text-center p-6">
+
       {step < MOOD_QUESTIONS.length ? (
+
         <>
           <h2 className="text-2xl text-blue font-saigon2 mb-8">
             {currentQuestion.question}
           </h2>
+
+
           <div className="flex flex-col gap-3 w-full max-w-sm">
+
             {currentQuestion.options.map((opt) => (
+
               <button
                 key={opt}
                 onClick={() => handleAnswer(opt)}
@@ -138,21 +206,36 @@ export default function MoodSpinPage() {
               >
                 {opt}
               </button>
+
             ))}
+
           </div>
         </>
+
+
       ) : (
+
         <>
           <h2 className="text-2xl text-blue font-saigon2 mb-4">
             Nhập số điện thoại để quay số nhận ưu đãi
           </h2>
+
+
           <input
             placeholder="Số điện thoại"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             className="p-3 rounded-lg border-2 border-blue mb-4 w-full max-w-sm"
           />
-          {error && <p className="text-tomato font-bold mb-4">{error}</p>}
+
+
+          {error && (
+            <p className="text-tomato font-bold mb-4">
+              {error}
+            </p>
+          )}
+
+
           <button
             onClick={handleSpin}
             disabled={isSpinning}
@@ -160,8 +243,11 @@ export default function MoodSpinPage() {
           >
             {isSpinning ? "Đang quay..." : "Quay số ngay"}
           </button>
+
         </>
+
       )}
+
     </div>
   );
 }
