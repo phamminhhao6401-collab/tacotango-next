@@ -383,6 +383,12 @@ export default function CheckoutPage() {
 
       const finalOrderId = responseData.orderId || `TT-${Date.now()}`;
 
+      sendGAEvent("event", "TEST_PURCHASE", {
+        debug_mode: true,
+        currency: "VND",
+        value: total,
+      });
+
       sendGAEvent("event", "purchase", {
         currency: "VND",
         value: total,
