@@ -384,7 +384,6 @@ export default function CheckoutPage() {
       const finalOrderId = responseData.orderId || `TT-${Date.now()}`;
 
       sendGAEvent("event", "purchase", {
-        debug_mode: true, 
         currency: "VND",
         value: total,
         transaction_id: finalOrderId,
@@ -882,19 +881,33 @@ export default function CheckoutPage() {
           )}
 
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className="p-4 rounded-full font-bold bg-tomato text-white hover:bg-tomato/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Đang xử lý...
-              </>
-            ) : (
-              "Xác nhận đặt hàng"
-            )}
-          </button>
+  type="submit"
+  disabled={isSubmitting}
+  onClick={() => {
+    if (!isSubmitting && items.length > 0) {
+      sendGAEvent("event", "begin_checkout", {
+        currency: "VND",
+        value: subtotal,
+        items: items.map((line: CartItem) => ({
+          item_id: line.id || line.cartId,
+          item_name: line.name,
+          price: line.price,
+          quantity: line.quantity,
+        })),
+      });
+    }
+  }}
+  className="p-4 rounded-full font-bold bg-tomato text-white hover:bg-tomato/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+>
+  {isSubmitting ? (
+    <>
+      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      Đang xử lý...
+    </>
+  ) : (
+    "Xác nhận đặt hàng"
+  )}
+</button>
         </form>
       </main>
 
