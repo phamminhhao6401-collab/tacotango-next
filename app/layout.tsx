@@ -58,7 +58,7 @@ export default function RootLayout({
       >
         <CartProvider>{children}</CartProvider>
       </body>
-      <GoogleAnalytics gaId="G-C6XYHQHG56" />
+      <GoogleAnalytics gaId="G-9DCF7CN9H4" />
     </html>
   );
 }
