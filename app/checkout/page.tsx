@@ -68,7 +68,7 @@ const SHIPPING_FEE = 10000;
 const FREE_SHIPPING_THRESHOLD = 150000;
 const MAX_FILE_SIZE_MB = 5;
 
-const ORDERS_PAUSED = false;
+const ORDERS_PAUSED = true;
 
 const DELIVERY_SLOTS = [
   { value: "T4_2907_0900_1100", label: "T4 (29/07): 9:00 am - 11:00 am" },
